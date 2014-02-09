@@ -32,7 +32,40 @@
 # !!! Be sure to set working directory to this file location prior to running !!!
 
 # load libraries and initialize Java
-generateManuscriptResults <- function(genDesigns=TRUE, runEmpirical=FALSE) {
+generateManuscriptResults <- function(runEmpirical=FALSE) {
+  
+  # generate the designs for the study
+  designList = generateDesignsForManuscript()
+  # save to an Rdata file
+  # TODO
+  
+  # calculate empirical power (or load from existing csv file)
+  empiricalPowerData = data.frame(
+    designName=sapply(designList, function(x) { return(x[[1]]@name)}),
+    perGroupN=sapply(designList, function(x) { return(x[[3]]['perGroupN'])}),
+    sigmaYGscale=sapply(designList, function(x) { return(x[[3]]['sigmaYGscale'])}),
+    sigmaGscale=sapply(designList, function(x) { return(x[[3]]['sigmaGscale'])}),
+    betaScale=sapply(designList, function(x) { return(x[[3]]['betaScale'])})
+  )
+  # calculate empirical power for each design
+  empiricalPowerAndTimeList = lapply(designList, function(x) {
+    print(paste(c("Calculating power for '", x[[1]]@name ,
+                  "', N=", x[[3]]['perGroupN'], 
+                  ", SigmaYGscale=", x[[3]]['sigmaYGscale'],
+                  ", SigmaGscale=", x[[3]]['sigmaGscale']),
+                collapse=""))
+    startTime <- proc.time()
+    power = fastEmpiricalPower(x[[1]], x[[2]])
+    ellapsed = proc.time() - startTime
+    print(paste(c("Done (", ellapsed[[1]], "s). Power=", power), collapse=""))
+    return(list(power, ellapsed))
+  })
+  
+  ## add the timing results and the empirical power values to the data
+  empiricalPowerData = data.frame(empiricalPowerData,
+                                  empiricalPower=sapply(empiricalPowerAndTimeList, function(x) {return(x[[1]])}),
+                                  time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
+                                  
   
 }
 
