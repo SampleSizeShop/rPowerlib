@@ -20,91 +20,33 @@
 # 
 
 #
-# Calculate power using the covariate adjustment approach proposed
-# by Kreidler et al.
+# Adjustment factor for the M matrix based on the
+# expected value of the projection matrix 
+# of the covariates: G(G'G)^-1G'
 #
-glmmPower.covariateAdjustedTheory = function(design, hypothesis) {
-  # TODO: make sure model and glh conform
-  if (class(design) != "design.glmmFG") {
-    stop("The specified design is not a linear model with fixed and random covariates")
-  }
-  if (class(hypothesis) != "glh") {
-    stop("the specified hypothesis is not a general linear hypothesis")
-  }
-  if (hypothesis@test != "Hotelling-Lawley") {
-    stop("At present, this function only supports the Hotelling Lawley Trace test")
-  }
-  
-  # form sigmaE
-  SigmaE = design@SigmaY - design@SigmaYG %*% solve(design@SigmaG) %*% t(design@SigmaYG)
-  
-  # get total sample size and nuE
-  totalN = design@perGroupN * nrow(design@XEssence)
-  rank = qr(design@XEssence)$rank
-  nuE = totalN - (rank + ncol(design@SigmaG))
-  
-  # calculate the fixed portion of X'X inverse
-  XtXinverse = (1/design@perGroupN) * solve(t(design@XEssence) %*% design@XEssence)
-  
-  #XtXinverse = XtXinverse - totalN * design@
-  #
-  # variable naming conventions are from Muller & Stewart
-  #
-  #### NOTE: at present, we only support the Hotelling Lawley Trace test ####
-  
-  # calculate the numerator degrees of freedom
-  a = nrow(hypothesis@betweenContrast)
-  b = ncol(hypothesis@withinContrast)
-  s = min(a,b)
-  ndf = a * b
-  
-  # calculate the denominator degrees of freedom
-  t1 = nuE * nuE - nuE * (2 * b + 3) + b * (b + 3);
-  t2 = (nuE * (a  + b + 1) - (a + 2 * b + b * b - 1));
-  ddf = 4 + (a * b + 2) * (t1/t2);
-  
-  # calculate the error sums of squares 
-  SSPE = (t(hypothesis@withinContrast) %*% SigmaE %*% hypothesis@withinContrast) * nuE
-  # calculate the hypothesis sum of squares for the fixed portion of the design
-  C = matrix(hypothesis@betweenContrast[1:nrow(hypothesis@betweenContrast),1:nrow(design@Beta)], nrow=nrow(hypothesis@betweenContrast))
-  
-  thetaObserved = C %*% design@Beta %*% hypothesis@withinContrast
-  thetaDiff = thetaObserved - hypothesis@thetaNull
-  M = C %*% XtXinverse %*% t(C)
-  #M = M * (nuE) / (nuE - ncol(design@SigmaG))
-  #--> Sarah adjust with no basis
-  #M = M * (totalN - rank) / nuE 
-  M = M * (totalN) / (totalN - ncol(design@SigmaG)) 
-  
-  #   q = (rank + ncol(design@SigmaG))
-  #   qf = rank
-  #   
-  #   M = M * (totalN - qf) / (totalN - q - qf + a)
-  
-  SSPH = t(thetaDiff) %*% solve(M) %*% thetaDiff
-  # calculate the Hotelling-Lawley trace
-  hlt = sum(diag(SSPH %*% solve(SSPE)))
-  
-  # calculate the critical F
-  Fcrit = qf(1 - hypothesis@alpha, ndf, ddf)
-  
-  # compute the noncentrality
-  omega = hlt * nuE
-  
-  # calculate power
-  power = 1 - pf(Fcrit, ndf, ddf, ncp=omega)
-  
-  return(power)
+mAdjust.fixedVsRandomDF <- function(totalN, numFixedPredictors, numRandomPredictors) {
+  return((totalN - numFixedPredictors) / (totalN - numFixedPredictors - numRandomPredictors))
 }
 
+#
+# Adjustment factor for the M matrix based on the
+# expected value of the projection matrix 
+# of the covariates: G(G'G)^-1G'
+#
+mAdjust.expectedProjection <- function(totalN, numFixedPredictors, numRandomPredictors) {
+  return ((totalN) / (totalN - numRandomPredictors)) 
+}
 
-
+#
+# Adjustment factor of 1, that is, no adjustment to M
+#
+mAdjust.noAdjust <- function(totalN, numFixedPredictors, numRandomPredictors) { return(1) } 
 
 #
 # Calculate power using the covariate adjustment approach proposed
 # by Kreidler et al.
 #
-glmmPower.covariateAdjusted = function(design, hypothesis) {
+glmmPower.covariateAdjusted = function(design, hypothesis, mAdjust=mAdjust.fixedVsRandomDF) {
   # TODO: make sure model and glh conform
   if (class(design) != "design.glmmFG") {
     stop("The specified design is not a linear model with fixed and random covariates")
@@ -151,16 +93,7 @@ glmmPower.covariateAdjusted = function(design, hypothesis) {
   
   thetaObserved = C %*% design@Beta %*% hypothesis@withinContrast
   thetaDiff = thetaObserved - hypothesis@thetaNull
-  M = C %*% XtXinverse %*% t(C)
-  #M = M * (nuE) / (nuE - ncol(design@SigmaG))
-  #--> Sarah adjust with no basis
-  M = M * (totalN - rank) / nuE 
-  # M = M * (totalN) / (totalN - ncol(design@SigmaG)) 
-  
-#   q = (rank + ncol(design@SigmaG))
-#   qf = rank
-#   
-#   M = M * (totalN - qf) / (totalN - q - qf + a)
+  M = C %*% XtXinverse %*% t(C) * mAdjust(totalN, rank, ncol(design@SigmaG))
   
   SSPH = t(thetaDiff) %*% solve(M) %*% thetaDiff
   # calculate the Hotelling-Lawley trace
@@ -202,15 +135,15 @@ glmmPower.shieh = function(design, glh) {
   
   # determine the Kstar matrix from the design
   XtX = t(design@XEssence) %*% design@XEssence
-  Kstar = design@perGroupN * adiag(XtX, design@SigmaG)
+  Kstar = adiag(design@perGroupN * XtX, totalN * design@SigmaG)
   
   # form the error and hypothesis sum of squares 
   betaFull = rbind(design@Beta, solve(design@SigmaG) %*% t(design@SigmaYG))  
   E = t(glh@withinContrast) %*% sigmaE %*% glh@withinContrast * nuE
-  thetaObs = (glh@betweenContrast %*% betaFull %*% glh@withinContrast) - glh@thetaNull
-  H = (t(thetaObs) %*% 
+  thetaDiff = (glh@betweenContrast %*% betaFull %*% glh@withinContrast) - glh@thetaNull
+  H = (t(thetaDiff) %*% 
          solve(glh@betweenContrast %*% solve(Kstar) %*% t(glh@betweenContrast)) %*% 
-         thetaObs)
+         thetaDiff)
   EinvH = solve(E) %*% H
   
   # calculate some components of the target F distribution parameters
@@ -237,7 +170,7 @@ glmmPower.shieh = function(design, glh) {
   } else if (glh@test == "Hotelling-Lawley Trace, Pillai-Sampson 1959") {
     ddf = s * (nuE - b - 1) + 2
     hlt = sum(diag(EinvH))
-    noncentrality = totalN * hlt
+    noncentrality = nuE * hlt
     
   } else if (glh@test == "Hotelling-Lawley") {
     g = ((nuE^2 - nuE*(2*b + 3) + b*(b+3)) / 
@@ -245,7 +178,7 @@ glmmPower.shieh = function(design, glh) {
     )
     ddf = 4 + (ab + 2)*g
     hlt = sum(diag(EinvH))
-    noncentrality = totalN * hlt  
+    noncentrality = nuE * hlt  
   }
   
   # get the critical value under the null
@@ -273,7 +206,7 @@ glmmPower.unconditionalSingleCovariate = function(design, hypothesis) {
   
   obj=.jnew("com/kreidles/PowerCalculator")
   power = .jcall(obj, "D", "calculateUnconditionalSingleCovariatePower", 
-                 toJSON.XEssence(design), toJSON(hypothesis))
+                 designToJSON(design, FALSE), toJSON(hypothesis))
   return(power)
 }
 
@@ -293,7 +226,7 @@ glmmPower.fixed = function(design, hypothesis) {
   
   obj=.jnew("com/kreidles/PowerCalculator")
   power = .jcall(obj, "D", "calculateConditionalPower", 
-                 toJSON(design), toJSON(hypothesis))
+                 designToJSON(design, FALSE), toJSON(hypothesis))
   return(power)
 }
 

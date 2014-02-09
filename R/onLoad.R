@@ -23,7 +23,8 @@
   library(magic)
   library(car)
   library(MASS)
-
+  library(animation)
+  
   # initialize the java environment and load necessary jars
   .jpackage(pkgname, lib.loc=libname)
   
@@ -31,7 +32,7 @@
   # initialize the java environment
   .jpackage("glmmPower")
   .jinit()
-  libdir = paste(c(getwd(), "/../inst/lib/"), collapse="")
+  libdir = paste(c(getwd(), "/../inst/java/"), collapse="")
   
   .jaddClassPath(paste(c(libdir, "commons-math3-3.2.jar"), collapse=""))
   .jaddClassPath(paste(c(libdir, "json-simple-1.1.1.jar"), collapse=""))

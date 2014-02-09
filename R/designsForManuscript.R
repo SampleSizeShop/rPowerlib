@@ -18,6 +18,7 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+
 # Define the X essence matrices
 XEssence.trt2 = diag(2)
 XEssence.trt4 = diag(4)
@@ -106,6 +107,17 @@ glh.trt4doubly6 = new("glh",
 paramList = list(perGroupN=c(10,100), sigmaYGscale=c(0.5, 1, 2), sigmaGscale=c(1, 2))
 paramComboList = data.frame(expand.grid(paramList))
 
+#
+# Identify the beta scale such that glmmPower.covariateAdjusted
+# return 0.9 power
+#
+getBetaScaleByPower <- function(design, glh, targetPower=0.90, lower=0, upper=1000) {
+  betaScale = uniroot(function(x) {
+    design@Beta = design@Beta * x
+    return(glmmPower.covariateAdjusted(design, glh) - targetPower)
+  }, c(lower, upper))
+  return(betaScale$root)
+}
 
 #
 # Update the design and/or glh with the specified parameters
@@ -118,9 +130,17 @@ setDesignParameters <- function(params, design, glh) {
   design@SigmaYG = params['sigmaYGscale'] * design@SigmaYG
   # scale the sigma G matrix
   design@SigmaG = params['sigmaGscale'] * design@SigmaG
-
-  return(list(design, glh, params))
+  # get the beta scale needed to achieve 90% power
+  print(params)
+  betaScale = getBetaScaleByPower(design, glh)
+  print(betaScale)
+  
+  design@Beta = design@Beta * betaScale  
+  
+  return(list(design, glh, c(params, betaScale)))
 }
+
+
 
 #
 # Build the final design and hypothesis list
@@ -133,7 +153,7 @@ manuscriptDesignList = c(
             Beta=betaFixed.trt2Uni, 
             SigmaY=SigmaY.univariate, 
             SigmaG=SigmaG.cov1, 
-            SigmaYG=SigmaYG.cov1Uni), glh.trt2uni)),
+            SigmaYG=SigmaYG.cov1Uni), glh.trt2uni),
   apply(paramComboList, 1, setDesignParameters, 
         new("design.glmmFG", name="Two fixed predictors, 3 covariates, univariate",
             XEssence=XEssence.trt2,
@@ -306,35 +326,6 @@ manuscriptDesignList = c(
   )
 
 
-#
-# Generate a data set with empirical power for each design
-#
-#
-empiricalPowerData = data.frame(
-  designName=sapply(manuscriptDesignList, function(x) { return(x[[1]]@name)}),
-  perGroupN=sapply(manuscriptDesignList, function(x) { return(x[[3]]['perGroupN'])}),
-  sigmaYGscale=sapply(manuscriptDesignList, function(x) { return(x[[3]]['sigmaYGscale'])}),
-  sigmaGscale=sapply(manuscriptDesignList, function(x) { return(x[[3]]['sigmaGscale'])})
-  )
-# calculate empirical power for each design
-empiricalPowerAndTimeList = lapply(manuscriptDesignList, function(x) {
-  print(paste(c("Calculating power for '", x[[1]]@name ,
-                "', N=", x[[3]]['perGroupN'], 
-                ", SigmaYGscale=", x[[3]]['sigmaYGscale'],
-                ", SigmaGscale=", x[[3]]['sigmaGscale']),
-              collapse=""))
-  startTime <- proc.time()
-  power = fastEmpiricalPower(x[[1]], x[[2]])
-  ellapsed = proc.time() - startTime
-  print(paste(c("Done (", ellapsed[[1]], "s)"), collapse=""))
-  return(list(power, ellapsed))
-})
-
-## add the timing results and the empirical power values to the data
-empiricalPowerData = data.frame(empiricalPowerData,
-                                empiricalPower=sapply(empiricalPowerAndTimeList, function(x) {return(x[[1]])}),
-                                time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
-                           )
 
 
 
