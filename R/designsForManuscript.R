@@ -26,10 +26,11 @@ generateDesignsForManuscript = function() {
   perGroupNList = c(10, 100)
   
   # define covariances for covariates (designs with 1, 3, or 6 covariates)
+  var.G = 2.5
   rho.G = 0.01
   SigmaG.cov1 = matrix(c(1))
-  SigmaG.cov3 = rho.G * as.matrix(rep(1,3)) %*% t(as.matrix(rep(1,3))) + diag(3)*(1-rho.G)
-  SigmaG.cov6 = rho.G * as.matrix(rep(1,6)) %*% t(as.matrix(rep(1,6))) + diag(6)*(1-rho.G)
+  SigmaG.cov3 = var.G * (rho.G * as.matrix(rep(1,3)) %*% t(as.matrix(rep(1,3))) + diag(3)*(1-rho.G))
+  SigmaG.cov6 = var.G * (rho.G * as.matrix(rep(1,6)) %*% t(as.matrix(rep(1,6))) + diag(6)*(1-rho.G))
   SigmaG.scaleList = c(1,2)
   
   # define sigma Y for univariate and multivariate designs
@@ -56,7 +57,7 @@ generateDesignsForManuscript = function() {
   betaFixed.trt4Multi6 = matrix(c(1,rep(0,23)), nrow=4) 
   
   # define sigmaYG (p x qg), p=#responses, qg=#covariates for univariate and multivariate designs
-  rho.YG = 0.3
+  rho.YG = 0.5
   # one covariate
   SigmaYG.cov1Uni = matrix(c(rho.YG))
   SigmaYG.cov1Lear = matrix(sapply(seq(1,2,length.out=5), function(x) { rho.YG^(x)}), nrow=5)
