@@ -27,7 +27,7 @@
     <property name="module.version" value="1.0.0" />
     <property name="source.dir" value="${basedir}/../javasrc" />
     <property name="tmp.dir" value="${basedir}/tmp" />
-    <property name="lib.dir" value="${basedir}/../lib" />
+    <property name="lib.dir" value="${basedir}/../java" />
     
     <fileset id="libraries" dir="${lib.dir}">
         <include name="commons-math3-3.2.jar" />
@@ -55,7 +55,7 @@
     
     <!-- Java library compile -->
     <target name="compile" depends="setup">
-      <javac debug="true"
+      <javac debug="true" target="1.6"
              deprecation="on"
              listfiles="true"
              debuglevel="lines,vars,source"

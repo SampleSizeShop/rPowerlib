@@ -167,12 +167,14 @@ public class GLMMFixedRandomDesign {
         for(int i = 0; i < this.sigmaE.getRowDimension(); i++) { errorMeansList[i] = 0; }
         MultivariateNormalDistribution errorMVN = 
                 new MultivariateNormalDistribution(errorMeansList, this.sigmaE.getData());
-
+        errorMVN.reseedRandomGenerator(1812);
+        
         // create a multivariate normal object to generate replicates of the covariates
         double[] covarMeansList = new double[this.sigmaG.getRowDimension()];
         for(int i = 0; i < this.sigmaG.getRowDimension(); i++) { covarMeansList[i] = 0; }
         MultivariateNormalDistribution covariateMVN = 
                 new MultivariateNormalDistribution(covarMeansList, this.sigmaG.getData());
+        covariateMVN.reseedRandomGenerator(1067);
 
         // allocate memory for the X matrix
         RealMatrix XMatrix = new Array2DRowRealMatrix(this.XFixed.getRowDimension(),

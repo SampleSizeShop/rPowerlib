@@ -25,6 +25,77 @@
 #
 
 #
+# Extract the fixed portion of a GLMM(F,G) design 
+#
+getFixedDesign = function(design) {
+  if (class(design) == "design.glmmF") {
+    return(design)
+  } else if (class(design) == "design.glmmFG") {
+    return(new("design.glmmF",
+               name=paste(c("As design.glmmF: ", design@name), collapse=""),
+               description=design@description,                 
+               XEssence=design@XEssence,
+               perGroupN=design@perGroupN,
+               Beta=design@Beta,
+               SigmaError=design@SigmaY
+    ))    
+  } else {
+    stop("Input design must either be a design.glmmF or a design.glmmFG")
+  }
+}
+
+#
+# Create a design with a single covariate from a full
+# GLMM(F,G) design
+#
+getSingleCovariateDesign = function(design) {
+  if (class(design) == "design.glmmF") {
+    return(design)
+  } else if (class(design) == "design.glmmFG") {
+    if (ncol(design@SigmaG) == 1) {
+      return(design)
+    } else {
+      # select the covariate with the strongest covariance with any outcome
+      # get the column of sigmaYG with the maximum covairance
+      covarColumn = which.max(apply(design@SigmaYG,2,max))
+      # extract the appropriate sigmaG element
+      sigmaG = matrix(design@SigmaG[covarColumn, covarColumn])
+      # extract the appropriate column from SigmaYG
+      sigmaYG = matrix(design@SigmaYG[, covarColumn])
+      # return the new design
+      return(new("design.glmmFG",
+                 name=paste(c("As Single Covariate: ", design@name), collapse=""),
+                 description=design@description,
+                 XEssence = design@XEssence,
+                 perGroupN = design@perGroupN,
+                 Beta = design@Beta,
+                 SigmaY = design@SigmaY,
+                 SigmaG = sigmaG,
+                 SigmaYG = sigmaYG           
+      ))    
+    }
+  } else {
+    stop("Input design must either be a design.glmmF or a design.glmmFG")
+  }
+}
+
+#
+# Reduce the number of columns in the between participant contrast
+#
+resizeBetweenContrast <- function(glh, newColumns) {
+  return(new("glh",
+             alpha = glh@alpha,
+             betweenContrast = matrix(glh@betweenContrast[,1:newColumns], 
+                                      nrow=nrow(glh@betweenContrast), byrow=FALSE),
+             withinContrast = glh@withinContrast,
+             thetaNull = glh@thetaNull,
+             test = glh@test
+  ))
+}
+
+
+
+#
 #
 # generateManuscriptResults.R
 #
@@ -36,8 +107,6 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
   
   # generate the designs for the study
   designList = generateDesignsForManuscript()
-  # save to an Rdata file
-  # TODO
   
   # calculate empirical power (or load from existing csv file)
   empiricalPowerData = data.frame(
@@ -47,9 +116,42 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
     sigmaGscale=sapply(designList, function(x) { return(x[[3]]['sigmaGscale'])}),
     betaScale=sapply(designList, function(x) { return(x[[3]]['betaScale'])})
   )
+  
+  # add covariate adjusted power with df adjustment
+  empiricalPowerData$power.covarAdj.mAdjDF = sapply(designList, function(x) { 
+    return(glmmPower.covariateAdjusted(x[[1]], x[[2]]))})
+  # add covariate adjusted power with expected projection adjustment
+  empiricalPowerData$power.covarAdj.mAdjExpProj = sapply(designList, function(x) { 
+    return(glmmPower.covariateAdjusted(x[[1]], x[[2]], 
+                                       mAdjust=mAdjust.expectedProjection))})
+  # add power using method described by Shieh
+  empiricalPowerData$power.shieh=sapply(designList, function(x) { 
+    return(glmmPower.shieh(x[[1]], x[[2]])) })
+  
+  # add fixed power
+  empiricalPowerData$power.fixedOnly=sapply(designList, function(x) {
+    newDesign = getFixedDesign(x[[1]])
+    newHypothesis = resizeBetweenContrast(x[[2]], nrow(newDesign@Beta))
+    return(glmmPower.fixed(newDesign, newHypothesis)) 
+  })
+  
+  # add power using the strongest covariate
+  empiricalPowerData$power.topCovar=sapply(designList, function(x) { 
+    print(x[[1]]@name)
+    newDesign = getSingleCovariateDesign(x[[1]])
+    newHypothesis = resizeBetweenContrast(x[[2]], nrow(newDesign@Beta) + 1)
+    return(glmmPower.unconditionalSingleCovariate(newDesign, newHypothesis)) 
+  })
+  
+  # write the calculated power values to disk
+  write.csv(empiricalPowerData, file="../data/calculatedPower.csv")
+  
   # calculate empirical power for each design
-  empiricalPowerAndTimeList = lapply(designList, function(x) {
-    print(paste(c("Calculating power for '", x[[1]]@name ,
+  empiricalPowerAndTimeList = list()
+  for(i in 1:length(designList)) {
+  #for(i in 1:10) {
+    x = designList[[i]]
+    print(paste(c(i, ": Calculating power for '", x[[1]]@name ,
                   "', N=", x[[3]]['perGroupN'], 
                   ", SigmaYGscale=", x[[3]]['sigmaYGscale'],
                   ", SigmaGscale=", x[[3]]['sigmaGscale']),
@@ -58,14 +160,18 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
     power = fastEmpiricalPower(x[[1]], x[[2]])
     ellapsed = proc.time() - startTime
     print(paste(c("Done (", ellapsed[[1]], "s). Power=", power), collapse=""))
-    return(list(power, ellapsed))
-  })
+    empiricalPowerAndTimeList[[i]] = list(power, ellapsed)
+  }
+
   
   ## add the timing results and the empirical power values to the data
-  empiricalPowerData = data.frame(empiricalPowerData,
-                                  empiricalPower=sapply(empiricalPowerAndTimeList, function(x) {return(x[[1]])}),
-                                  time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
+  empiricalPowerData$empiricalPower=sapply(empiricalPowerAndTimeList, function(x) {
+    return(x[[1]])})
+  empiricalPowerData$time=sapply(empiricalPowerAndTimeList, function(x) {
+    return(x[[2]][1])})
                                   
+  ## write the empirical power data to disk   
+  write.csv(empiricalPowerData, file="../data/calculatedAndEmpiricalPower.csv")
   
 }
 
@@ -113,23 +219,24 @@ empiricalPowerAndTimeList = lapply(manuscriptDesignList, function(x) {
 empiricalPowerData = data.frame(empiricalPowerData,
                                 empiricalPower=sapply(empiricalPowerAndTimeList, function(x) {return(x[[1]])}),
                                 time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
-
-#
-# Add columns for calculated power using the following methods:
-# 1. Kreidler covariate adjust with M adjusted by (N-qf)/(N-qf-qr)
-# 2. Kreidler covariate adjust with M
-#
-
-
-
-#
-# Write the power results to a csv file
-#
-
-
-#
-# Generate the box plots showing deviations from
-# empirical power
-#
-
-
+                                
+                                #
+                                # Add columns for calculated power using the following methods:
+                                # 1. Kreidler covariate adjust with M adjusted by (N-qf)/(N-qf-qr)
+                                # 2. Kreidler covariate adjust with M
+                                #
+                                
+                                
+                                
+                                #
+                                # Write the power results to a csv file
+                                #
+                                
+                                
+                                #
+                                # Generate the box plots showing deviations from
+                                # empirical power
+                                #
+                                
+                                
+                                

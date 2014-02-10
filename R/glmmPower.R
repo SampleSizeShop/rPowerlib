@@ -230,5 +230,3 @@ glmmPower.fixed = function(design, hypothesis) {
   return(power)
 }
 
-
-
