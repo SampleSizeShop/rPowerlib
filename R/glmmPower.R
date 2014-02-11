@@ -46,7 +46,7 @@ mAdjust.noAdjust <- function(totalN, numFixedPredictors, numRandomPredictors) { 
 # Calculate power using the covariate adjustment approach proposed
 # by Kreidler et al.
 #
-glmmPower.covariateAdjusted = function(design, hypothesis, mAdjust=mAdjust.fixedVsRandomDF) {
+glmmPower.covariateAdjusted = function(design, hypothesis, mAdjust=mAdjust.expectedProjection) {
   # TODO: make sure model and glh conform
   if (class(design) != "design.glmmFG") {
     stop("The specified design is not a linear model with fixed and random covariates")

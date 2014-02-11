@@ -25,17 +25,9 @@ generateDesignsForManuscript = function() {
   XEssence.trt4 = diag(4)
   perGroupNList = c(10, 100)
   
-  # define covariances for covariates (designs with 1, 3, or 6 covariates)
-  var.G = 2.5
-  rho.G = 0.01
-  SigmaG.cov1 = matrix(c(1))
-  SigmaG.cov3 = var.G * (rho.G * as.matrix(rep(1,3)) %*% t(as.matrix(rep(1,3))) + diag(3)*(1-rho.G))
-  SigmaG.cov6 = var.G * (rho.G * as.matrix(rep(1,6)) %*% t(as.matrix(rep(1,6))) + diag(6)*(1-rho.G))
-  SigmaG.scaleList = c(1,2)
-  
   # define sigma Y for univariate and multivariate designs
   rho.Y = 0.04
-  sigY = 6.7
+  sigY = 5
   SigmaY.univariate = matrix(c(sigY))
   SigmaY.LEAR = sigY * matrix(c(1.0,0.4,0.3,0.2,0.16,
                                 0.4,1.0,0.4,0.3,0.2,
@@ -48,6 +40,14 @@ generateDesignsForManuscript = function() {
       (0.2 * as.matrix(rep(1,2)) %*% t(as.matrix(rep(1,2))) + diag(2)*(1-0.2))
   )
   
+  # define covariances for covariates (designs with 1, 3, or 6 covariates)
+  var.G = 1
+  rho.G = 0.01
+  SigmaG.cov1 = matrix(c(1))
+  SigmaG.cov3 = diag(c(0.9, 1.2, 1.5)) + rho.G * matrix(rep(1,9), nrow=3)
+  SigmaG.cov6 = diag(c(0.9, 1.2, 1.5, 1.8, 2.1, 2.4)) + 
+    rho.G * matrix(rep(1,36), nrow=6)
+      
   # define beta fixed for unviariate and multivariate designs
   betaFixed.trt2Uni = matrix(c(1,0), nrow=2) 
   betaFixed.trt2Multi5 = matrix(c(1,rep(0,9)), nrow=2) 
@@ -57,12 +57,12 @@ generateDesignsForManuscript = function() {
   betaFixed.trt4Multi6 = matrix(c(1,rep(0,23)), nrow=4) 
   
   # define sigmaYG (p x qg), p=#responses, qg=#covariates for univariate and multivariate designs
-  rho.YG = 0.5
   # one covariate
+  rho.YG = 0.6
   SigmaYG.cov1Uni = matrix(c(rho.YG))
-  SigmaYG.cov1Lear = matrix(sapply(seq(1,2,length.out=5), function(x) { rho.YG^(x)}), nrow=5)
-  SigmaYG.cov1CS = matrix(rep(rho.YG,5), nrow=5)
-  SigmaYG.cov1CSxCS = (matrix(c(0.3, 0.3, 0.3), nrow=3) %x% matrix(c(0.6, 0.5), nrow=2))
+  SigmaYG.cov1Lear = matrix(sapply(seq(1.2,2.2,length.out=5), function(x) { rho.YG^(x)}), nrow=5)
+  SigmaYG.cov1CS = matrix(rep(0.2,5), nrow=5)
+  SigmaYG.cov1CSxCS = 2*(matrix(c(0.3, 0.3, 0.3), nrow=3) %x% matrix(c(0.6, 0.5), nrow=2))
   # 3 covariates
   SigmaYG.cov3Uni = SigmaYG.cov1Uni %x% matrix(seq(1,0.5, length.out=3), nrow=1)
   SigmaYG.cov3Lear = matrix(seq(1,0.5, length.out=3), nrow=1) %x% SigmaYG.cov1Lear
@@ -73,8 +73,6 @@ generateDesignsForManuscript = function() {
   SigmaYG.cov6Lear = matrix(seq(1,0.5,length.out=6), nrow=1) %x% SigmaYG.cov1Lear
   SigmaYG.cov6CS = matrix(seq(1,0.5,length.out=6), nrow=1) %x% SigmaYG.cov1CS
   SigmaYG.cov6CSxCS = matrix(seq(1,0.5,length.out=6), nrow=1) %x% SigmaYG.cov1CSxCS
-  # scale factors for SigmaYG
-  SigmaYG.scaleList = c(0.5, 1, 2)
   
   # build the hypothesis objects for univariate and multivariate designs
   glh.trt2uni = function(numCovar) {
@@ -119,7 +117,7 @@ generateDesignsForManuscript = function() {
   # create a data frame with combinations of per group N,
   # sigmaY scale, sigmaYG scale, and beta scale
   #
-  paramList = list(perGroupN=c(10,100), sigmaYGscale=c(0.5, 1, 2), sigmaGscale=c(1, 2))
+  paramList = list(perGroupN=c(10,100), sigmaYGscale=c(0.5, 1, 1.5, 2))
   paramComboList = data.frame(expand.grid(paramList))
   
   #
@@ -144,7 +142,7 @@ generateDesignsForManuscript = function() {
     # scale the sigma YG matrix
     design@SigmaYG = params['sigmaYGscale'] * design@SigmaYG
     # scale the sigma G matrix
-    design@SigmaG = params['sigmaGscale'] * design@SigmaG
+    #design@SigmaG = params['sigmaGscale'] * design@SigmaG
     # get the beta scale needed to achieve 90% power
     betaScale = getBetaScaleByPower(design, glh)  
     design@Beta = design@Beta * betaScale  
@@ -344,3 +342,17 @@ generateDesignsForManuscript = function() {
 }
 
 
+isPosDefSigmaE = function(designList) {
+  posDefList = sapply(1:length(designList), function(i) {
+    design = designList[[i]][[1]]
+    SigmaE = design@SigmaY - design@SigmaYG %*% solve(design@SigmaG) %*% t(design@SigmaYG)
+    eigenValues = eigen(SigmaE)$values
+    if (min(eigenValues) <= 0) {
+      print(design@SigmaY)
+      print(SigmaE)
+      print("============")
+    }
+    return(min(eigenValues) > 0)
+  })
+  return(which(posDefList==0))
+}

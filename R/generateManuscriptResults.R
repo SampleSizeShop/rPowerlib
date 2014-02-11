@@ -107,6 +107,13 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
   
   # generate the designs for the study
   designList = generateDesignsForManuscript()
+#   SigmaEList = lapply(designList, function(x) {
+#     design = x[[1]]
+#     return(design@SigmaY - 
+#              design@SigmaYG %*% solve(design@SigmaG) %*% t(design@SigmaYG))
+#   })
+#   isPosDefSigmaE(designList)
+  
   
   # calculate empirical power (or load from existing csv file)
   empiricalPowerData = data.frame(
@@ -119,7 +126,8 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
   
   # add covariate adjusted power with df adjustment
   empiricalPowerData$power.covarAdj.mAdjDF = sapply(designList, function(x) { 
-    return(glmmPower.covariateAdjusted(x[[1]], x[[2]]))})
+    return(glmmPower.covariateAdjusted(x[[1]], x[[2]],
+                                       mAdjust=mAdjust.fixedVsRandomDF))})
   # add covariate adjusted power with expected projection adjustment
   empiricalPowerData$power.covarAdj.mAdjExpProj = sapply(designList, function(x) { 
     return(glmmPower.covariateAdjusted(x[[1]], x[[2]], 
@@ -175,68 +183,3 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
   
 }
 
-# define functions
-
-#
-#
-#
-
-
-
-#
-# generate the designs for the experiment or load from
-# previously generated .Rdata file
-#
-
-#
-# Calculate empirical power or load csv from previous run
-#
-#
-# Generate a data set with empirical power for each design
-#
-#
-empiricalPowerData = data.frame(
-  designName=sapply(manuscriptDesignList, function(x) { return(x[[1]]@name)}),
-  perGroupN=sapply(manuscriptDesignList, function(x) { return(x[[3]]['perGroupN'])}),
-  sigmaYGscale=sapply(manuscriptDesignList, function(x) { return(x[[3]]['sigmaYGscale'])}),
-  sigmaGscale=sapply(manuscriptDesignList, function(x) { return(x[[3]]['sigmaGscale'])})
-)
-# calculate empirical power for each design
-empiricalPowerAndTimeList = lapply(manuscriptDesignList, function(x) {
-  print(paste(c("Calculating power for '", x[[1]]@name ,
-                "', N=", x[[3]]['perGroupN'], 
-                ", SigmaYGscale=", x[[3]]['sigmaYGscale'],
-                ", SigmaGscale=", x[[3]]['sigmaGscale']),
-              collapse=""))
-  startTime <- proc.time()
-  power = fastEmpiricalPower(x[[1]], x[[2]])
-  ellapsed = proc.time() - startTime
-  print(paste(c("Done (", ellapsed[[1]], "s)"), collapse=""))
-  return(list(power, ellapsed))
-})
-
-## add the timing results and the empirical power values to the data
-empiricalPowerData = data.frame(empiricalPowerData,
-                                empiricalPower=sapply(empiricalPowerAndTimeList, function(x) {return(x[[1]])}),
-                                time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
-                                
-                                #
-                                # Add columns for calculated power using the following methods:
-                                # 1. Kreidler covariate adjust with M adjusted by (N-qf)/(N-qf-qr)
-                                # 2. Kreidler covariate adjust with M
-                                #
-                                
-                                
-                                
-                                #
-                                # Write the power results to a csv file
-                                #
-                                
-                                
-                                #
-                                # Generate the box plots showing deviations from
-                                # empirical power
-                                #
-                                
-                                
-                                
