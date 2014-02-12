@@ -120,7 +120,7 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
     designName=sapply(designList, function(x) { return(x[[1]]@name)}),
     perGroupN=sapply(designList, function(x) { return(x[[3]]['perGroupN'])}),
     sigmaYGscale=sapply(designList, function(x) { return(x[[3]]['sigmaYGscale'])}),
-    sigmaGscale=sapply(designList, function(x) { return(x[[3]]['sigmaGscale'])}),
+    #sigmaGscale=sapply(designList, function(x) { return(x[[3]]['sigmaGscale'])}),
     betaScale=sapply(designList, function(x) { return(x[[3]]['betaScale'])})
   )
   
@@ -181,5 +181,134 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
   ## write the empirical power data to disk   
   write.csv(empiricalPowerData, file="../data/calculatedAndEmpiricalPower.csv")
   
+  
 }
 
+
+summarizeResults = function() {
+  
+  # load the data
+  empiricalPowerData = read.csv("../data/calculatedAndEmpiricalPower.csv",
+                                header=TRUE, stringsAsFactors=FALSE)
+  
+  # get rid of sigmaG scales if still in data set
+  drops <- c("sigmaGscale")
+  powerDataClean = empiricalPowerData[,!(names(empiricalPowerData) %in% drops)]
+  powerDataClean$id = 1:length(powerDataClean$designName)
+  powerDataClean$diff.covar = powerDataClean$power.covarAdj.mAdjExpProj - powerDataClean$empiricalPower 
+  powerDataClean$diff.shieh = powerDataClean$power.shieh - powerDataClean$empiricalPower 
+  powerDataClean$diff.topCovar = powerDataClean$power.topCovar - powerDataClean$empiricalPower
+  powerDataClean$diff.fixed = powerDataClean$power.fixed - powerDataClean$empiricalPower
+  
+  # convert to long with factor identifying power method
+  powerDataLong = reshape(powerDataClean, 
+                          varying=c(
+                            "diff.covar",
+                            "diff.shieh",
+                            "diff.topCovar",
+                            "diff.fixed"
+                            ),
+                          timevar="method",
+                          times = c("covar", "shieh", "topCovar", "fixed"),
+                          idvar="id", direction="long")
+  # make 'method' into a factor so we can sort the boxplots
+  powerDataLong$method = factor(powerDataLong$method, 
+                                levels=c("covar", "shieh", "topCovar", "fixed"),
+                                labels=c("Covariate Adjustment", 
+                                         "Shieh", 
+                                         "Single Covariate",
+                                         "Fixed Only"))
+  # silly me, didn't put the number of covariates in a separate column
+  powerDataLong$numCovar = 
+    ifelse(grepl("1 covar", powerDataLong$designName),
+           1, 
+           ifelse(grepl("3 covar", powerDataLong$designName),
+                     3, 6))
+  
+  # Plot deviation from empirical across all designs
+  pdf(file="../inst/figures/PowerBoxPlot_Overall.pdf")
+  boxplot(diff ~ method, data=powerDataLong,
+          ylab="Deviation from Empirical Power")
+  dev.off()
+  
+  # plot by number of covariates
+  pdf(file="../inst/figures/PowerBoxPlot_NumCovar.pdf")
+  par(mfrow=c(3,1), oma=c(5,1,1,1), mar=c(1,4,0,0))
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==1,],
+          xaxt='n', ylim=c(-0.6, 0.1),
+          ylab="1 Covariate")
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==3,],
+          xaxt='n', ylim=c(-0.6, 0.1), ylab="3 Covariates")
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==6,],
+          ylab="6 Covariates", ylim=c(-0.6, 0.1))
+  dev.off()
+  
+  # plot by small and large sample size
+  pdf(file="../inst/figures/PowerBoxPlot_PerGroupN.pdf")
+  par(mfrow=c(2,1), oma=c(5,1,1,1), mar=c(1,4,0,0))
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$perGroupN==10,],
+          xaxt='n', ylim=c(-0.6, 0.1),
+          ylab="Per Group N = 10")
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$perGroupN==100,],
+          ylim=c(-0.6, 0.1),
+          ylab="Per Group N = 100")
+  dev.off()
+  
+  # plot by covariate influence (i.e. SigmaYG-scale)
+  pdf(file="../inst/figures/PowerBoxPlot_SigmaYG_Scale.pdf")
+  par(mfrow=c(4,1), oma=c(5,1,1,1), mar=c(1,4,0,0))
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==0.5,],
+          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 0.5), 
+          ylim=c(-0.6, 0.1))
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==1,],
+          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 1),
+          ylim=c(-0.6, 0.1))
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==1.5,],
+          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 1.5),
+          ylim=c(-0.6, 0.1))
+  boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==2,],
+          ylab=expression(bold(Sigma)[YG]-scale == 2),
+          ylim=c(-0.6, 0.1))
+  dev.off()
+  
+}
+
+#
+# Applied example
+#
+# 1. Elashoff D, Zhou H, Reiss J, et al. 
+# Prevalidation of salivary biomarkers for oral cancer detection. 
+# Cancer Epidemiol Biomarkers Prev. 2012;21(4):664–672. 
+#
+elashoffExample = function() {
+  
+  # Mean differences from Table 3
+  il8Data = data.frame(control=c(33.8,30.9,19.6,19.8,18.6),
+                       oscc=c(32.4,27.7,17.4,17.7,16.8))
+  il8Data$diff = il8Data$control - il8Data$oscc
+  mean(il8Data$diff)
+  
+  ageSD = mean(12.7,12.1,13.4,15.2,11.4,8,9.1,13.5,10,11)
+  ageSD^2
+  
+  il8SD = mean(2.2,3.6,2.5,3.9,3.3,2.8,2.9,2.6,4.0,2.2)
+  il8SD^2
+  
+  design.elashoff = new("design.glmmFG", 
+                    XEssence=diag(2),
+                    perGroupN=35,
+                    Beta=matrix(c(2.14,2.14,0,2.14), nrow=2), 
+                    SigmaY=4.84*matrix(c(1,0.4,0.4,1), nrow=2), 
+                    SigmaG=diag(c(4.84,161.29)), 
+                    SigmaYG=matrix(c(1.94,2.79,0.97,2.79), nrow=2, byrow=TRUE))
+  glh.elashoff = new("glh", betweenContrast=matrix(c(1,-1,0,0),nrow=1), 
+                 withinContrast=matrix(c(1,-1), nrow=2), 
+                 thetaNull=matrix(c(0)))
+
+  SigmaError = design.elashoff@SigmaY - 
+    design.elashoff@SigmaYG %*% 
+    solve(design.elashoff@SigmaG) %*% t(design.elashoff@SigmaYG)
+  
+  glmmPower.covariateAdjusted(design.elashoff, glh.elashoff)
+
+}
