@@ -200,6 +200,12 @@ summarizeResults = function() {
   powerDataClean$diff.topCovar = powerDataClean$power.topCovar - powerDataClean$empiricalPower
   powerDataClean$diff.fixed = powerDataClean$power.fixed - powerDataClean$empiricalPower
   
+  # get max absolute deviations
+  max(abs(powerDataClean$diff.covar))
+  max(abs(powerDataClean$diff.shieh))
+  max(abs(powerDataClean$diff.topCovar))
+  max(abs(powerDataClean$diff.fixed))
+  
   # convert to long with factor identifying power method
   powerDataLong = reshape(powerDataClean, 
                           varying=c(
