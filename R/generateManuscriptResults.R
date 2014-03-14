@@ -220,7 +220,7 @@ summarizeResults = function() {
   # make 'method' into a factor so we can sort the boxplots
   powerDataLong$method = factor(powerDataLong$method, 
                                 levels=c("covar", "shieh", "topCovar", "fixed"),
-                                labels=c("Covariate Adjustment", 
+                                labels=c("New Method", 
                                          "Shieh", 
                                          "Single Covariate",
                                          "Fixed Only"))
@@ -232,49 +232,51 @@ summarizeResults = function() {
                      3, 6))
   
   # Plot deviation from empirical across all designs
-  pdf(file="../inst/figures/PowerBoxPlot_Overall.pdf")
-  boxplot(diff ~ method, data=powerDataLong,
+  pdf(file="../inst/figures/PowerBoxPlot_Overall.pdf", family="Times")
+  par(lab=c(3,3,7))
+  boxplot(diff ~ method, data=powerDataLong, las=1, ylim=c(-0.6,0.2),
           ylab="Deviation from Empirical Power")
   dev.off()
   
   # plot by number of covariates
-  pdf(file="../inst/figures/PowerBoxPlot_NumCovar.pdf")
-  par(mfrow=c(3,1), oma=c(5,1,1,1), mar=c(1,4,0,0))
+  pdf(file="../inst/figures/PowerBoxPlot_NumCovar.pdf", family="Times")
+  par(mfrow=c(3,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==1,],
-          xaxt='n', ylim=c(-0.6, 0.1),
+          xaxt='n', ylim=c(-0.6, 0.2), las=1, 
           ylab="1 Covariate")
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==3,],
-          xaxt='n', ylim=c(-0.6, 0.1), ylab="3 Covariates")
+          xaxt='n', ylim=c(-0.6, 0.2), las=1,
+          ylab="3 Covariates")
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==6,],
-          ylab="6 Covariates", ylim=c(-0.6, 0.1))
+          ylab="6 Covariates", las=1, ylim=c(-0.6, 0.2))
   dev.off()
   
   # plot by small and large sample size
-  pdf(file="../inst/figures/PowerBoxPlot_PerGroupN.pdf")
-  par(mfrow=c(2,1), oma=c(5,1,1,1), mar=c(1,4,0,0))
+  pdf(file="../inst/figures/PowerBoxPlot_PerGroupN.pdf", family="Times")
+  par(mfrow=c(2,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$perGroupN==10,],
-          xaxt='n', ylim=c(-0.6, 0.1),
+          xaxt='n', ylim=c(-0.6, 0.2), las=1,
           ylab="Per Group N = 10")
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$perGroupN==100,],
-          ylim=c(-0.6, 0.1),
+          ylim=c(-0.6, 0.2), las=1,
           ylab="Per Group N = 100")
   dev.off()
   
   # plot by covariate influence (i.e. SigmaYG-scale)
-  pdf(file="../inst/figures/PowerBoxPlot_SigmaYG_Scale.pdf")
-  par(mfrow=c(4,1), oma=c(5,1,1,1), mar=c(1,4,0,0))
+  pdf(file="../inst/figures/PowerBoxPlot_SigmaYG_Scale.pdf", family="Times")
+  par(mfrow=c(4,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==0.5,],
-          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 0.5), 
-          ylim=c(-0.6, 0.1))
+          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 0.5), las=1,
+          ylim=c(-0.6, 0.2))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==1,],
-          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 1),
-          ylim=c(-0.6, 0.1))
+          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 1), las=1,
+          ylim=c(-0.6, 0.2))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==1.5,],
-          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 1.5),
-          ylim=c(-0.6, 0.1))
+          xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 1.5), las=1,
+          ylim=c(-0.6, 0.2))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==2,],
-          ylab=expression(bold(Sigma)[YG]-scale == 2),
-          ylim=c(-0.6, 0.1))
+          ylab=expression(bold(Sigma)[YG]-scale == 2), las=1,
+          ylim=c(-0.6, 0.2))
   dev.off()
   
 }
