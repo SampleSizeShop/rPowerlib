@@ -1,7 +1,8 @@
+#####################################################################
 # 
-#  Package glmmPower calculates power for the general linear 
-#  multivariate model
-#  Copyright (C) 2013 Sarah Kreidler.
+#  Package rPowerlib calculates power for the general linear 
+#  multivariate model with and without Gaussian covariates
+#  Copyright (C) 2014 University of Colorado Denver.
 # 
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -17,6 +18,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+#####################################################################
 
 .onLoad <- function(libname, pkgname) {
   library(rJava)
