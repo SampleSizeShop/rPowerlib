@@ -3,7 +3,7 @@ Type: Package
 Title: glmmPower: Power and sample size for linear models
 Version: 0.1.0
 Date: 2014-02-02
-Author: Sarah Kreidler (based on the work of Keith E. Muller)
+Author: Sarah Kreidler (extending the work of Keith E. Muller and colleagues)
 Maintainer: Sarah Kreidler <sarah.kreidler@ucdenver.edu>
 Description: This library calculates power for various linear models, including
   designs with and without Gaussian covariates

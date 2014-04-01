@@ -21,8 +21,8 @@
  -->
 <project name="Covariate Adjusted Power Simulation" default="compress">
         
-    <property name="module.name" value="com.kreidles.covariatepowersimulation" />
-    <property name="owner" value="Sarah Kreidler" />
+    <property name="module.name" value="org.samplesizeshop.covariatepowersimulation" />
+    <property name="owner" value="SampleSizeShop.org" />
     <property name="author" value="Sarah Kreidler" />
     <property name="module.version" value="1.0.0" />
     <property name="source.dir" value="${basedir}/../javasrc" />
