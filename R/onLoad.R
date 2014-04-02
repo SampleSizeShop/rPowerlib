@@ -30,16 +30,4 @@
   # initialize the java environment and load necessary jars
   .jpackage(pkgname, lib.loc=libname)
   
-  
-  # initialize the java environment
-  .jpackage("glmmPower")
-  .jinit()
-  libdir = paste(c(getwd(), "/../inst/java/"), collapse="")
-  
-  .jaddClassPath(paste(c(libdir, "commons-math3-3.2.jar"), collapse=""))
-  .jaddClassPath(paste(c(libdir, "json-simple-1.1.1.jar"), collapse=""))
-  .jaddClassPath(paste(c(libdir, "com.kreidles.covariatepowersimulation-1.0.0.jar"), collapse=""))
-  .jaddClassPath(paste(c(libdir, "edu.ucdenver.bios.javastatistics-1.2.0.jar"), collapse=""))
-  .jaddClassPath(paste(c(libdir, "jsc.jar"), collapse=""))
-  
 }

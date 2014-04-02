@@ -1,6 +1,6 @@
-Package: glmmPower
+Package: rPowerlib
 Type: Package
-Title: glmmPower: Power and sample size for linear models
+Title: rPowerlib: Power and sample size for linear models
 Version: 0.1.0
 Date: 2014-02-02
 Author: Sarah Kreidler (extending the work of Keith E. Muller and colleagues)
