@@ -19,18 +19,23 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 #####################################################################
+#
+# Script containing functions which reproduce the results int the manuscript
+# "Calculating Power for the General Linear Multivariate Model 
+#  With One or More Gaussian Covariates"
+# by Sarah M. Kreidler, Keith E. Muller, and Deborah H. Glueck
+#
+#
 
-# 
-# For notation an theoretical details, see
-#
-# 1. Muller KE, Stewart PW. Linear model theory: univariate, multivariate, and mixed models. 
-# Hoboken, New Jersey: John Wiley and Sons; 2006.
-#
-
-#
-# Extract the fixed portion of a GLMM(F,G) design 
-#
-getFixedDesign = function(design) {
+#' Extract the fixed-only portion of a GLMM(F,G) design. 
+#'
+#' Creates a design.glmmF object from a design.glmmFG or design.glmmF
+#' object, after removing information regarding covariates.  
+#'
+#' @param design a design.glmmF or design.glmmFG object
+#' @return design.glmmF object
+#' 
+getFixedDesign <- function(design) {
   if (class(design) == "design.glmmF") {
     return(design)
   } else if (class(design) == "design.glmmFG") {
@@ -47,10 +52,15 @@ getFixedDesign = function(design) {
   }
 }
 
-#
-# Create a design with a single covariate from a full
-# GLMM(F,G) design
-#
+#' Create a design with a single covariate from a full GLMM(F,G) design
+#'
+#' Creates a new design.glmmFG object with a single covariate.  The
+#' covariate with the strongest covariance with any of the outcomes is
+#' retained in the design  
+#'
+#' @param design a design.glmmF or design.glmmFG object
+#' @return design.glmmFG object with a single covariate
+#' 
 getSingleCovariateDesign = function(design) {
   if (class(design) == "design.glmmF") {
     return(design)
@@ -82,9 +92,15 @@ getSingleCovariateDesign = function(design) {
   }
 }
 
-#
-# Reduce the number of columns in the between participant contrast
-#
+#' Reduce the number of columns in the between participant contrast
+#'
+#' Convenience routine to trim the columns of the between participant
+#' contrast in a general linear hypothesis  
+#'
+#' @param glh the general linear hypothesis object
+#' @param newColumns the updated number of columns
+#' @return design.glmmFG object with a single covariate
+#' 
 resizeBetweenContrast <- function(glh, newColumns) {
   return(new("glh",
              alpha = glh@alpha,
@@ -96,7 +112,21 @@ resizeBetweenContrast <- function(glh, newColumns) {
   ))
 }
 
-
+#' Calculate empirical power values for all results contained in the manuscript
+#' "Calculating Power for the General Linear Multivariate Model With One or More 
+#' Gaussian Covariates" by Sarah M. Kreidler, Keith E. Muller, and Deborah H. Glueck
+#'  
+#' Calculates empirical power for all study designs in the validation experiment described
+#' in Kreidler et al. 
+#'   
+#' @param glh the general linear hypothesis object
+#' @param newColumns the updated number of columns
+#' @return design.glmmFG object with a single covariate
+#' 
+manuscript.empiricalPower <- function() {
+  # generate the designs for the study
+  designList = generateDesignsForManuscript()
+}
 
 #
 #
