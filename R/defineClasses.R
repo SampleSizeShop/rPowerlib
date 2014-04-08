@@ -36,12 +36,31 @@
 
 ########### CLASS DEFINITIONS ##########
 
-#
-# design.glmmF
-#
-# Class describing the general linear model with
-# only fixed predictors
-#
+#'
+#' design.glmmF
+#'
+#' Class describing a general linear multivariate design with
+#' only fixed predictors. 
+#' 
+#' For notation details
+#'      Muller, K. E., & Stewart, P. W. (2006). Linear model theory: univariate, 
+#'      multivariate, and mixed models. Hoboken, New Jersey: John Wiley and Sons.
+#'
+#'  \section{Slots}{
+#'    \describe{
+#'      \item{\code{name}:}{An optional \code{character} string specifying the 
+#'      Name of the study design.}
+#'      \item{\code{description}:}{An optional \code{character} string specifying the 
+#'      brief description of the study design.}
+#'      \item{\code{XEssence}:}{The design "essence" \code{matrix}.}
+#'      
+#'    }
+#'  }
+#'
+#' @note You can still add notes
+#' @name design.glmmF 
+#' @rdname design.glmmF
+#' 
 setClass (
   "design.glmmF",
   representation ( name = "character",
