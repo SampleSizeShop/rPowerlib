@@ -39,27 +39,26 @@
 #'
 #' design.glmmF
 #'
-#' Class describing a general linear multivariate design with
-#' only fixed predictors. 
-#' 
-#' For notation details
-#'      Muller, K. E., & Stewart, P. W. (2006). Linear model theory: univariate, 
-#'      multivariate, and mixed models. Hoboken, New Jersey: John Wiley and Sons.
+#' Class describing a general linear multivariate model design
+#' in which all predictors are fixed and known as part of the study design. 
 #'
-#'  \section{Slots}{
-#'    \describe{
-#'      \item{\code{name}:}{An optional \code{character} string specifying the 
-#'      Name of the study design.}
-#'      \item{\code{description}:}{An optional \code{character} string specifying the 
-#'      brief description of the study design.}
-#'      \item{\code{XEssence}:}{The design "essence" \code{matrix}.}
-#'      
-#'    }
-#'  }
+#' @slot name An optional \code{character} string specifying the name of the study design.
+#' @slot description An optional \code{character} string specifying the 
+#'      brief description of the study design.
+#' @slot perGroupN A \code{numeric} value indicating the number
+#'      of participants in each study group.
+#' @slot XEssence The design "essence" \code{matrix}.
+#' @slot Beta The \code{matrix} of regression coefficients.
+#' @slot SigmaError The residual covariance \code{matrix}.      
 #'
-#' @note You can still add notes
 #' @name design.glmmF 
 #' @rdname design.glmmF
+#' @note For theoretical details, please see
+#' 
+#' Muller, K. E., Lavange, L. M., Ramey, S. L., & Ramey, C. T. (1992). 
+#' Power Calculations for General Linear Multivariate Models Including 
+#' Repeated Measures Applications. Journal of the American Statistical 
+#' Association, 87(420), 1209-1226.
 #' 
 setClass (
   "design.glmmF",
@@ -111,12 +110,31 @@ setClass (
   }
 )
 
-#
-# design.glmmFG
-#
-# Class describing the general linear model with fixed predictors and
-# one or more Gaussian covariates
-#
+
+#'
+#' design.glmmFG
+#'
+#' Class describing a general linear multivariate model design
+#' containing both fixed predictors and one or more Gaussian covariates 
+#'
+#' @slot name An optional \code{character} string specifying the name of the study design.
+#' @slot description An optional \code{character} string specifying the 
+#'      brief description of the study design.
+#' @slot perGroupN A \code{numeric} value indicating the number
+#'      of participants in each study group.
+#' @slot XEssence The design "essence" \code{matrix} for the fixed predictors.
+#' @slot Beta The \code{matrix} of regression coefficients related to fixed predictors.
+#' @slot SigmaY The covariance \code{matrix} for the outcomes, prior to adjusting for covariates.
+#' @slot SigmaG The covariance \code{matrix} for the Gaussian predictors.
+#' @slot SigmaYG The covariance \code{matrix} relating the outcomes and the Gaussian predictors.      
+#'
+#' @name design.glmmFG 
+#' @rdname design.glmmFG
+#' @note For theoretical details, please see
+#' 
+#' Glueck, D. H., & Muller, K. E. (2003). Adjusting power for a baseline covariate 
+#' in linear models. Statistics in Medicine, 22(16), 2535-2551. doi:10.1002/sim.1341
+#' 
 setClass (
   "design.glmmFG",
   representation ( name = "character",
@@ -189,6 +207,27 @@ setClass (
 #
 # Class describing the general linear hypothesis
 #
+#'
+#' glh
+#'
+#' Class describing a general linear hypothesis for a multivariate model
+#'
+#' @slot alpha The Type I error rate.  Must be a \code{numeric} value between 0 and 1.
+#' @slot betweenContrast The \code{matrix} of between participant contrasts.
+#' @slot withinContrast The \code{matrix} of within participant contrasts.
+#' @slot thetaNull The \code{matrix} of between participant contrasts.
+#' @slot test A \code{character} string indicating the statistical test. At present,
+#' only the Hotelling-Lawley trace is supported with value "Hotelling-Lawley".
+#'
+#' @name glh
+#' @rdname glh
+#' @note For theoretical details, please see
+#' 
+#' Muller, K. E., Lavange, L. M., Ramey, S. L., & Ramey, C. T. (1992). 
+#' Power Calculations for General Linear Multivariate Models Including 
+#' Repeated Measures Applications. Journal of the American Statistical 
+#' Association, 87(420), 1209-1226.
+#' 
 setClass (
   "glh",
   representation ( alpha = "numeric",
@@ -219,19 +258,132 @@ setClass (
 ########### END CLASS DEFINITIONS ##########
 
 ########### GENERIC DEFINITIONS ##########
+
+#' simulateXMatrix
+#'
+#' Generate a complete X matrix for a given design.  If random
+#' covariates are present in the design, the values of the covariates
+#' will be randomly generated.
+#'
+#' @param design An object describing a study design, commonly a \code{design.glmmFG}
+#'
+#' @return A complete design matrix
+#' 
+#' @seealso \code{\link{design.glmmFG}}
+#' 
+#' @export
+#' @docType methods
+#' @rdname simulateXMatrix
+#'
 setGeneric("simulateXMatrix", function(design) standardGeneric("simulateXMatrix"))
 
+#' simulateData
+#'
+#' Simulate data sets based on the specified design.
+#'
+#' @param design An object describing a study design, commonly a \code{design.glmmFG}
+#' @param replicates the total number of data sets to generate
+#' @param blockSize the data sets can be written to multiple files.  The \code{blockSize}
+#' is the number of data sets which will be contained in each file.
+#' @param outputDir the directory to which the data set files will be written
+#' @param filePrefix the filename prefix for each data set file
+#' @param xNames the column names for the predictors in the data set
+#' @param yNames the column names for the outcomes in the data set 
+#'
+#' @return Writes one or more CSV files containing data sets 
+#' to the output directory.
+#' 
+#' @seealso \code{\link{design.glmmFG}} and \code{\link{design.glmmF}} 
+#' 
+#' @export
+#' @docType methods
+#' @rdname simulateData
+#'
 setGeneric("simulateData", function(design, replicates=10000, blockSize=1000,
                                     outputDir=".", filePrefix="simulatedData",
                                     xNames=NA, yNames=NA, ...) 
   standardGeneric("simulateData"))
 
+
+#' designToJSON
+#'
+#' Generate a character string with the JSON representation of a
+#' study design object, optionally with a complete X matrix.  
+#' Used to pass complex R objects into the
+#' supporting Java library for the \code{rPowerlib} package.
+#'
+#' @param design An object describing a study design
+#' @param expandX If true, the JSON representation will include a complete X matrix.
+#' 
+#' @return The JSON representation of the design object
+#' 
+#' @seealso \code{\link{design.glmmFG}} and \code{\link{design.glmmF}} 
+#' 
+#' @export
+#' @docType methods
+#' @rdname designToJSON
+#'
 setGeneric("designToJSON", function(obj, expandX=FALSE) standardGeneric("designToJSON"))
 
+#' toJSON
+#'
+#' Generate a character string with the JSON representation of an object,
+#' most commonly a \code{glh} object. Used to pass complex R objects into the
+#' supporting Java library for the \code{rPowerlib} package.
+#'
+#' @param design An object describing a study design
+#' @param expandX If true, the JSON representation will include a complete X matrix.
+#' 
+#' @return The JSON representation of the object
+#' 
+#' @seealso \code{\link{glh}} 
+#' 
+#' @export
+#' @docType methods
+#' @rdname toJSON
+#'
 setGeneric("toJSON", function(obj) standardGeneric("toJSON"))
 
+#' empiricalPower
+#'
+#' Calculate empirical unconditional power for a given design and hypothesis.  This
+#' function is implemented purely in R and may run slowly for complex
+#' designs.
+#'
+#' @param design An object describing a study design
+#' @param glh An object describing the general linear hypothesis to be tested
+#' @replicates total number of error replicates to produce for a given X matrix
+#' @realizations total number of realizations of the X matrix to generate
+#' 
+#' @return empirical unconditional power
+#' 
+#' @seealso \code{\link{design.glmmFG}} and \code{\link{glh}} 
+#' 
+#' @export
+#' @docType methods
+#' @rdname empiricalPower
+#'
 setGeneric("empiricalPower", 
            function(design, glh, replicates=1000, realizations=1000) standardGeneric("empiricalPower"))
+
+#' fastEmpiricalPower
+#'
+#' Calculate empiricalPower for a given design and hypothesis.  Utilizes
+#' Java code to provide faster computation of empirical power.
+#'
+#' @param design An object describing a study design
+#' @param glh An object describing the general linear hypothesis to be tested
+#' @replicates total number of error replicates to produce for a given X matrix
+#' @realizations total number of realizations of the X matrix to generate
+#' 
+#' @return empirical unconditional power
+#' 
+#' @seealso \code{\link{design.glmmFG}} and \code{\link{glh}} 
+#' 
+#' @export
+#' @docType methods
+#' @rdname fastEmpiricalPower
+#'
 setGeneric("fastEmpiricalPower", 
            function(design, glh, realizations=1000, replicates=1000) standardGeneric("fastEmpiricalPower"))
 
