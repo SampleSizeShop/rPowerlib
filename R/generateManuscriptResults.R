@@ -218,10 +218,11 @@ generateManuscriptResults <- function(runEmpirical=FALSE) {
 }
 
 
-summarizeResults = function() {
+summarizeResults = function(output.data.dir=".", output.figures.dir=".") {
   
   # load the data
-  empiricalPowerData = read.csv("../data/calculatedAndEmpiricalPower.csv",
+  empiricalPowerData = read.csv(
+    paste(c(output.data.dir, "calculatedAndEmpiricalPower.csv"), collapse="/"),
                                 header=TRUE, stringsAsFactors=FALSE)
   
   # get rid of sigmaG scales if still in data set
@@ -234,10 +235,14 @@ summarizeResults = function() {
   powerDataClean$diff.fixed = powerDataClean$power.fixed - powerDataClean$empiricalPower
   
   # get max absolute deviations
-  max(abs(powerDataClean$diff.covar))
-  max(abs(powerDataClean$diff.shieh))
-  max(abs(powerDataClean$diff.topCovar))
-  max(abs(powerDataClean$diff.fixed))
+  maxDeviationData = data.frame(method=c("covar", "shieh", "topCovar", "fixed"),
+                                maxDeviation=c(max(abs(powerDataClean$diff.covar)),
+                                               max(abs(powerDataClean$diff.shieh)),
+                                               max(abs(powerDataClean$diff.topCovar)),
+                                               max(abs(powerDataClean$diff.fixed))))
+  # save the max deviation info to a csv file
+  write.csv(maxDeviationData, 
+            file=paste(c(output.data.dir, "maxDeviationsByMethod.csv"), collapse="/"))
   
   # convert to long with factor identifying power method
   powerDataLong = reshape(powerDataClean, 
@@ -265,14 +270,14 @@ summarizeResults = function() {
                      3, 6))
   
   # Plot deviation from empirical across all designs
-  pdf(file="../inst/figures/PowerBoxPlot_Overall.pdf", family="Times")
+  pdf(file=paste(c(output.figures.dir, "PowerBoxPlot_Overall.pdf"), collapse="/"), family="Times")
   par(lab=c(3,3,7))
   boxplot(diff ~ method, data=powerDataLong, las=1, ylim=c(-0.6,0.2),
           ylab="Deviation from Empirical Power")
   dev.off()
   
   # plot by number of covariates
-  pdf(file="../inst/figures/PowerBoxPlot_NumCovar.pdf", family="Times")
+  pdf(file=paste(c(output.figures.dir, "PowerBoxPlot_NumCovar.pdf"), collapse="/"), family="Times")
   par(mfrow=c(3,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==1,],
           xaxt='n', ylim=c(-0.6, 0.2), las=1, 
@@ -285,7 +290,7 @@ summarizeResults = function() {
   dev.off()
   
   # plot by small and large sample size
-  pdf(file="../inst/figures/PowerBoxPlot_PerGroupN.pdf", family="Times")
+  pdf(file=paste(c(output.figures.dir, "PowerBoxPlot_PerGroupN.pdf"), collapse="/"), family="Times")
   par(mfrow=c(2,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$perGroupN==10,],
           xaxt='n', ylim=c(-0.6, 0.2), las=1,
@@ -296,7 +301,7 @@ summarizeResults = function() {
   dev.off()
   
   # plot by covariate influence (i.e. SigmaYG-scale)
-  pdf(file="../inst/figures/PowerBoxPlot_SigmaYG_Scale.pdf", family="Times")
+  pdf(file=paste(c(output.figures.dir, "PowerBoxPlot_SigmaYG_Scale.pdf"), collapse="/"), family="Times")
   par(mfrow=c(4,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
   boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==0.5,],
           xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 0.5), las=1,
