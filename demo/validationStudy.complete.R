@@ -33,6 +33,20 @@
 # Also, the empirical power calculations require several hours to run (about 5-8 hrs).
 #
 
+#
+# Set default options for the demo
+#
+# set the output directory
+if (!exists(demo.data.dir)) {
+  demo.data.dir = "."  
+}
+if (!exists(demo.figures.dir)) {
+  demo.figures.dir = "."
+}
+if (!exists(demo.runEmpirical) || class(demo.runEmpirical) != "logical") {
+  runEmpirical = TRUE
+}
+
 # generate the designs for the validation study
 designList = generateDesignsForManuscript()
 
@@ -45,37 +59,39 @@ powerData = data.frame(
   betaScale=sapply(designList, function(x) { return(x[[3]]['betaScale'])})
 )
 
-
-# calculate empirical power for each design
-# !! Requires several hours to run !!
-empiricalPowerAndTimeList = list()
-for(i in 1:length(designList)) {
-  #for(i in 1:10) {
-  x = designList[[i]]
-  print(paste(c(i, ": Calculating power for '", x[[1]]@name ,
-                "', N=", x[[3]]['perGroupN'], 
-                ", SigmaYGscale=", x[[3]]['sigmaYGscale'],
-                ", SigmaGscale=", x[[3]]['sigmaGscale']),
-              collapse=""))
-  startTime <- proc.time()
-  power = fastEmpiricalPower(x[[1]], x[[2]])
-  ellapsed = proc.time() - startTime
-  print(paste(c("Done (", ellapsed[[1]], "s). Power=", power), collapse=""))
-  empiricalPowerAndTimeList[[i]] = list(power, ellapsed)
+if (demo.runEmpirical) {
+  # calculate empirical power for each design
+  # !! Requires several hours to run !!
+  empiricalPowerAndTimeList = list()
+  for(i in 1:length(designList)) {
+    #for(i in 1:10) {
+    x = designList[[i]]
+    print(paste(c(i, ": Calculating power for '", x[[1]]@name ,
+                  "', N=", x[[3]]['perGroupN'], 
+                  ", SigmaYGscale=", x[[3]]['sigmaYGscale'],
+                  ", SigmaGscale=", x[[3]]['sigmaGscale']),
+                collapse=""))
+    startTime <- proc.time()
+    power = fastEmpiricalPower(x[[1]], x[[2]])
+    ellapsed = proc.time() - startTime
+    print(paste(c("Done (", ellapsed[[1]], "s). Power=", power), collapse=""))
+    empiricalPowerAndTimeList[[i]] = list(power, ellapsed)
+  }
+  
+  ## add the timing results and the empirical power values to the data set
+  empiricalPowerData = cbind(powerData, data.frame(
+    empiricalPower=sapply(empiricalPowerAndTimeList, function(x) { return(x[[1]])}),
+    time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
+  ))
+  
+  ## write the calculated and empirical power data to disk   
+  write.csv(empiricalPowerData, 
+            file=paste(c(demo.data.dir, "empiricalPower.csv"), collapse="/"))
+  
+} else {
+  # load the existing empirical data 
+  empiricalPowerData = data("empiricalPower", package="rPowerlib")
 }
-
-## add the timing results and the empirical power values to the data set
-empiricalPowerData = cbind(powerData, data.frame(
-  empiricalPower=sapply(empiricalPowerAndTimeList, function(x) { return(x[[1]])}),
-  time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
-))
-
-## write the calculated and empirical power data to disk   
-write.csv(empiricalPowerData, 
-          file=paste(c(output.data.dir, "empiricalPower.csv"), collapse="/"))
-
-
-
 
 # add covariate adjusted power with df adjustment
 approxPowerData = powerData
@@ -119,16 +135,10 @@ approxPowerData$power.topCovar=sapply(designList, function(x) {
   return(glmmPower.unconditionalSingleCovariate(newDesign, newHypothesis)) 
 })
 
-# set the output directory
-if (is.null(output.data.dir)) {
-  output.data.dir = "."  
-}
-if (is.null(output.figures.dir)) {
-  output.figures.dir = "."
-}
+
 
 # write the calculated power values to disk
-write.csv(approxPowerData, file=paste(c(output.data.dir, "approximatePower.csv"), collapse="/"))
+write.csv(approxPowerData, file=paste(c(demo.data.dir, "approximatePower.csv"), collapse="/"))
 
 
 
@@ -137,7 +147,7 @@ write.csv(approxPowerData, file=paste(c(output.data.dir, "approximatePower.csv")
 #
 
 # reload the data file
-powerData = read.csv(paste(c(output.data.dir, "calculatedAndEmpiricalPower.csv"), 
+powerData = read.csv(paste(c(demo.data.dir, "calculatedAndEmpiricalPower.csv"), 
                                     collapse="/"), header=TRUE, stringsAsFactors=FALSE)
 
 # get rid of sigmaG scales if still in data set
@@ -179,14 +189,14 @@ powerDataLong$numCovar =
                 3, 6))
 
 # Plot deviation from empirical across all designs
-pdf(file=paste(c(output.figures.dir, "PowerBoxPlot_Overall.pdf"), collapse="/"), family="Times")
+pdf(file=paste(c(demo.figures.dir, "PowerBoxPlot_Overall.pdf"), collapse="/"), family="Times")
 par(lab=c(3,3,7))
 boxplot(diff ~ method, data=powerDataLong, las=1, ylim=c(-0.6,0.2),
         ylab="Deviation from Empirical Power")
 dev.off()
 
 # plot by number of covariates
-pdf(file=paste(c(output.figures.dir, "PowerBoxPlot_NumCovar.pdf"), collapse="/"), family="Times")
+pdf(file=paste(c(demo.figures.dir, "PowerBoxPlot_NumCovar.pdf"), collapse="/"), family="Times")
 par(mfrow=c(3,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
 boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==1,],
         xaxt='n', ylim=c(-0.6, 0.2), las=1, 
@@ -199,7 +209,7 @@ boxplot(diff ~ method, data=powerDataLong[powerDataLong$numCovar==6,],
 dev.off()
 
 # plot by small and large sample size
-pdf(file=paste(c(output.figures.dir, "PowerBoxPlot_PerGroupN.pdf"), collapse="/"), family="Times")
+pdf(file=paste(c(demo.figures.dir, "PowerBoxPlot_PerGroupN.pdf"), collapse="/"), family="Times")
 par(mfrow=c(2,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
 boxplot(diff ~ method, data=powerDataLong[powerDataLong$perGroupN==10,],
         xaxt='n', ylim=c(-0.6, 0.2), las=1,
@@ -210,7 +220,7 @@ boxplot(diff ~ method, data=powerDataLong[powerDataLong$perGroupN==100,],
 dev.off()
 
 # plot by covariate influence (i.e. SigmaYG-scale)
-pdf(file=paste(c(output.figures.dir, "PowerBoxPlot_SigmaYG_Scale.pdf"), collapse="/"), family="Times")
+pdf(file=paste(c(demo.figures.dir, "PowerBoxPlot_SigmaYG_Scale.pdf"), collapse="/"), family="Times")
 par(mfrow=c(4,1), oma=c(5,1,1,1), mar=c(1,4,0,0), lab=c(3,3,7))
 boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==0.5,],
         xaxt='n', ylab=expression(bold(Sigma)[YG]-scale == 0.5), las=1,
@@ -227,6 +237,6 @@ boxplot(diff ~ method, data=powerDataLong[powerDataLong$sigmaYGscale==2,],
 dev.off()
 
 #
-# See the output.data.dir and output.figures.dir for results
+# See the demo.data.dir and demo.figures.dir for results
 #
 

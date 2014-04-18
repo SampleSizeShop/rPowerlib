@@ -114,18 +114,95 @@ resizeBetweenContrast <- function(glh, newColumns) {
 
 #' Calculate empirical power values for all results contained in the manuscript
 #' "Calculating Power for the General Linear Multivariate Model With One or More 
-#' Gaussian Covariates" by Sarah M. Kreidler, Keith E. Muller, and Deborah H. Glueck
-#'  
-#' Calculates empirical power for all study designs in the validation experiment described
-#' in Kreidler et al. 
+#' Gaussian Covariates" by Sarah M. Kreidler, Keith E. Muller, and Deborah H. Glueck.
 #'   
 #' @param glh the general linear hypothesis object
 #' @param newColumns the updated number of columns
 #' @return design.glmmFG object with a single covariate
+#' @note This function requires several hours to run
 #' 
-manuscript.empiricalPower <- function() {
-  # generate the designs for the study
-  designList = generateDesignsForManuscript()
+calculateEmpiricalPowerForDesignList <- function(designList, output.data.dir=".") {
+  # calculate empirical power 
+  empiricalPowerData = data.frame(
+    designName=sapply(designList, function(x) { return(x[[1]]@name)}),
+    perGroupN=sapply(designList, function(x) { return(x[[3]]['perGroupN'])}),
+    sigmaYGscale=sapply(designList, function(x) { return(x[[3]]['sigmaYGscale'])}),
+    #sigmaGscale=sapply(designList, function(x) { return(x[[3]]['sigmaGscale'])}),
+    betaScale=sapply(designList, function(x) { return(x[[3]]['betaScale'])})
+  )
+  
+  # calculate empirical power for each design
+  # !! Requires several hours to run !!
+  empiricalPowerAndTimeList = list()
+  for(i in 1:length(designList)) {
+    #for(i in 1:10) {
+    x = designList[[i]]
+    print(paste(c(i, ": Calculating power for '", x[[1]]@name ,
+                  "', N=", x[[3]]['perGroupN'], 
+                  ", SigmaYGscale=", x[[3]]['sigmaYGscale'],
+                  ", SigmaGscale=", x[[3]]['sigmaGscale']),
+                collapse=""))
+    startTime <- proc.time()
+    power = fastEmpiricalPower(x[[1]], x[[2]])
+    ellapsed = proc.time() - startTime
+    print(paste(c("Done (", ellapsed[[1]], "s). Power=", power), collapse=""))
+    empiricalPowerAndTimeList[[i]] = list(power, ellapsed)
+  }
+  
+  ## add the timing results and the empirical power values to the data set
+  empiricalPowerData = cbind(powerData, data.frame(
+    empiricalPower=sapply(empiricalPowerAndTimeList, function(x) { return(x[[1]])}),
+    time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
+  ))
+  
+  ## write the calculated and empirical power data to disk   
+  write.csv(empiricalPowerData, 
+            file=paste(c(output.data.dir, "empiricalPower.csv"), collapse="/"))
+}
+
+
+calculateApproximatePowerForDesignList <- function(designList) {
+  # add covariate adjusted power with df adjustment
+  approxPowerData = powerData
+  approxPowerData$power.covarAdj.mAdjDF = sapply(designList, function(x) { 
+    return(glmmPower.covariateAdjusted(x[[1]], x[[2]],
+                                       mAdjust=mAdjust.fixedVsRandomDF))})
+  # add covariate adjusted power with expected projection adjustment
+  approxPowerData$power.covarAdj.mAdjExpProj = sapply(designList, function(x) { 
+    return(glmmPower.covariateAdjusted(x[[1]], x[[2]], 
+                                       mAdjust=mAdjust.expectedProjection))})
+  # add power using method described by
+  #
+  # Shieh, G. (2005). Power and sample size calculations for multivariate 
+  # linear models with random explanatory variables. Psychometrika, 70(2), 347–358. 
+  #
+  approxPowerData$power.shieh=sapply(designList, function(x) { 
+    return(glmmPower.shieh(x[[1]], x[[2]])) })
+  
+  # add fixed power, which does not account for covariates. This method described by 
+  #
+  # Muller, K. E., Lavange, L. M., Ramey, S. L., & Ramey, C. T. (1992). 
+  # Power Calculations for General Linear Multivariate Models Including 
+  # Repeated Measures Applications. Journal of the American Statistical 
+  # Association, 87(420), 1209–1226.
+  #
+  approxPowerData$power.fixedOnly=sapply(designList, function(x) {
+    newDesign = getFixedDesign(x[[1]])
+    newHypothesis = resizeBetweenContrast(x[[2]], nrow(newDesign@Beta))
+    return(glmmPower.fixed(newDesign, newHypothesis)) 
+  })
+  
+  # add power which accounts for only the strongest covariate, using the method described by
+  #
+  # Glueck, D. H., & Muller, K. E. (2003). Adjusting power for a baseline covariate 
+  # in linear models. Statistics in Medicine, 22(16), 2535–2551. 
+  #
+  approxPowerData$power.topCovar=sapply(designList, function(x) { 
+    print(x[[1]]@name)
+    newDesign = getSingleCovariateDesign(x[[1]])
+    newHypothesis = resizeBetweenContrast(x[[2]], nrow(newDesign@Beta) + 1)
+    return(glmmPower.unconditionalSingleCovariate(newDesign, newHypothesis)) 
+  })
 }
 
 #
