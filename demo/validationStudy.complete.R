@@ -45,57 +45,6 @@ powerData = data.frame(
   betaScale=sapply(designList, function(x) { return(x[[3]]['betaScale'])})
 )
 
-# add covariate adjusted power with df adjustment
-powerData$power.covarAdj.mAdjDF = sapply(designList, function(x) { 
-  return(glmmPower.covariateAdjusted(x[[1]], x[[2]],
-                                     mAdjust=mAdjust.fixedVsRandomDF))})
-# add covariate adjusted power with expected projection adjustment
-powerData$power.covarAdj.mAdjExpProj = sapply(designList, function(x) { 
-  return(glmmPower.covariateAdjusted(x[[1]], x[[2]], 
-                                     mAdjust=mAdjust.expectedProjection))})
-# add power using method described by
-#
-# Shieh, G. (2005). Power and sample size calculations for multivariate 
-# linear models with random explanatory variables. Psychometrika, 70(2), 347–358. 
-#
-powerData$power.shieh=sapply(designList, function(x) { 
-  return(glmmPower.shieh(x[[1]], x[[2]])) })
-
-# add fixed power, which does not account for covariates. This method described by 
-#
-# Muller, K. E., Lavange, L. M., Ramey, S. L., & Ramey, C. T. (1992). 
-# Power Calculations for General Linear Multivariate Models Including 
-# Repeated Measures Applications. Journal of the American Statistical 
-# Association, 87(420), 1209–1226.
-#
-powerData$power.fixedOnly=sapply(designList, function(x) {
-  newDesign = getFixedDesign(x[[1]])
-  newHypothesis = resizeBetweenContrast(x[[2]], nrow(newDesign@Beta))
-  return(glmmPower.fixed(newDesign, newHypothesis)) 
-})
-
-# add power which accounts for only the strongest covariate, using the method described by
-#
-# Glueck, D. H., & Muller, K. E. (2003). Adjusting power for a baseline covariate 
-# in linear models. Statistics in Medicine, 22(16), 2535–2551. 
-#
-powerData$power.topCovar=sapply(designList, function(x) { 
-  print(x[[1]]@name)
-  newDesign = getSingleCovariateDesign(x[[1]])
-  newHypothesis = resizeBetweenContrast(x[[2]], nrow(newDesign@Beta) + 1)
-  return(glmmPower.unconditionalSingleCovariate(newDesign, newHypothesis)) 
-})
-
-# set the output directory
-if (is.null(output.data.dir)) {
-  output.data.dir = "."  
-}
-if (is.null(output.figures.dir)) {
-  output.figures.dir = "."
-}
-
-# write the calculated power values to disk
-write.csv(empiricalPowerData, file=paste(c(output.data.dir, "calculatedPower.csv"), collapse="/"))
 
 # calculate empirical power for each design
 # !! Requires several hours to run !!
@@ -116,14 +65,71 @@ for(i in 1:length(designList)) {
 }
 
 ## add the timing results and the empirical power values to the data set
-powerData$empiricalPower=sapply(empiricalPowerAndTimeList, function(x) {
-  return(x[[1]])})
-powerData$time=sapply(empiricalPowerAndTimeList, function(x) {
-  return(x[[2]][1])})
+empiricalPowerData = cbind(powerData, data.frame(
+  empiricalPower=sapply(empiricalPowerAndTimeList, function(x) { return(x[[1]])}),
+  time=sapply(empiricalPowerAndTimeList, function(x) {return(x[[2]][1])})
+))
 
 ## write the calculated and empirical power data to disk   
-write.csv(powerData, 
-          file=paste(c(output.data.dir, "calculatedAndEmpiricalPower.csv"), collapse="/"))
+write.csv(empiricalPowerData, 
+          file=paste(c(output.data.dir, "empiricalPower.csv"), collapse="/"))
+
+
+
+
+# add covariate adjusted power with df adjustment
+approxPowerData = powerData
+approxPowerData$power.covarAdj.mAdjDF = sapply(designList, function(x) { 
+  return(glmmPower.covariateAdjusted(x[[1]], x[[2]],
+                                     mAdjust=mAdjust.fixedVsRandomDF))})
+# add covariate adjusted power with expected projection adjustment
+approxPowerData$power.covarAdj.mAdjExpProj = sapply(designList, function(x) { 
+  return(glmmPower.covariateAdjusted(x[[1]], x[[2]], 
+                                     mAdjust=mAdjust.expectedProjection))})
+# add power using method described by
+#
+# Shieh, G. (2005). Power and sample size calculations for multivariate 
+# linear models with random explanatory variables. Psychometrika, 70(2), 347–358. 
+#
+approxPowerData$power.shieh=sapply(designList, function(x) { 
+  return(glmmPower.shieh(x[[1]], x[[2]])) })
+
+# add fixed power, which does not account for covariates. This method described by 
+#
+# Muller, K. E., Lavange, L. M., Ramey, S. L., & Ramey, C. T. (1992). 
+# Power Calculations for General Linear Multivariate Models Including 
+# Repeated Measures Applications. Journal of the American Statistical 
+# Association, 87(420), 1209–1226.
+#
+approxPowerData$power.fixedOnly=sapply(designList, function(x) {
+  newDesign = getFixedDesign(x[[1]])
+  newHypothesis = resizeBetweenContrast(x[[2]], nrow(newDesign@Beta))
+  return(glmmPower.fixed(newDesign, newHypothesis)) 
+})
+
+# add power which accounts for only the strongest covariate, using the method described by
+#
+# Glueck, D. H., & Muller, K. E. (2003). Adjusting power for a baseline covariate 
+# in linear models. Statistics in Medicine, 22(16), 2535–2551. 
+#
+approxPowerData$power.topCovar=sapply(designList, function(x) { 
+  print(x[[1]]@name)
+  newDesign = getSingleCovariateDesign(x[[1]])
+  newHypothesis = resizeBetweenContrast(x[[2]], nrow(newDesign@Beta) + 1)
+  return(glmmPower.unconditionalSingleCovariate(newDesign, newHypothesis)) 
+})
+
+# set the output directory
+if (is.null(output.data.dir)) {
+  output.data.dir = "."  
+}
+if (is.null(output.figures.dir)) {
+  output.figures.dir = "."
+}
+
+# write the calculated power values to disk
+write.csv(approxPowerData, file=paste(c(output.data.dir, "approximatePower.csv"), collapse="/"))
+
 
 
 #
