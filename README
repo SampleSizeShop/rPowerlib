@@ -1,0 +1,38 @@
+The rPowerlib Package
+=========================
+
+The rPowerlib package for R (>3.0.0) calculates power for the general
+linear multivariate model with or without Gaussian covariates.  
+
+The package provides companion code for the manuscript:
+
+Kreidler, S. M., Muller, K. E., & Glueck, D. H. 
+Calculating Power for the General Linear Multivariate Model 
+With One or More Gaussian Covariates, In review.
+
+To replicate the simulation study results in the manuscript
+1. Download the zip file from https://github.com/samplesizeshop/rPowerlib
+2. Install the package into your local R installation (http://cran.r-project.org/doc/manuals/R-admin.html#Add_002don-packages)
+3. load the library: 
+  
+  > library(invWishartSum)
+
+4. Run the simulation study (may take several hours to run with empirical calculations)
+
+  > runSimulationStudy(study.data.dir="myDataDir", study.figures.dir="myFiguresDir", study.runEmpirical=TRUE)
+
+5. Run the applied example
+
+  > runElashoffExample()
+
+
+### Background ###
+
+This package is based on the SAS/IML product POWERLIB (http://www.jstatsoft.org/v30/i05)
+developed by Keith E. Muller and colleagues.
+At present, the rPowerlib DOES NOT include the full functionality of POWERLIB.
+For features such as power confidence intervals and more statistical tests,
+please try POWERLIB (http://github.com/samplesizeshop/powerlib) or 
+GLIMMPSE (https://glimmpse.samplesizeshop.org). Please
+visit http://SampleSizeShop.org for more information about calculating power and
+sample size.
