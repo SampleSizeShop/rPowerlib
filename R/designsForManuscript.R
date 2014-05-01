@@ -20,6 +20,17 @@
 #
 #####################################################################
 
+#' generateDesignsForManuscript 
+#' 
+#' Generate the list of test cases (design.glmmFG and glh objects) for
+#' the manuscript:\cr
+#' Kreidler, S. M., Muller, K. E., & Glueck, D. H. 
+#' Calculating Power for the General Linear Multivariate Model 
+#' With One or More Gaussian Covariates, In review.
+#' 
+#' @return list of pairs of design.glmmFG and glh objects
+#' @keywords internal
+#' 
 generateDesignsForManuscript = function() {
   
   # Define the X essence matrices
@@ -343,7 +354,15 @@ generateDesignsForManuscript = function() {
   
 }
 
-
+#' isPosDefSigmaE 
+#' 
+#' Convenience routine for checking if the designs in a
+#' list have a valid residual error matrix
+#' 
+#' @param list of pairs of design.glmmFG and glh objects
+#' @return list of indices for designs with invalid residual error covariance
+#' @keywords internal
+#' 
 isPosDefSigmaE = function(designList) {
   posDefList = sapply(1:length(designList), function(i) {
     design = designList[[i]][[1]]

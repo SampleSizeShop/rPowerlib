@@ -393,27 +393,8 @@ setGeneric("fastEmpiricalPower",
 
 ########### METHOD DEFINITIONS ##########
 
-##
-# simulateData: simulate data sets for the specified study design
-#
-# Args:
-#  design (required) - the glmmFG study design object
-#  replicates (optional) - the total number of data sets
-#  blockSize (optional) - the number of data sets to include in each file
-#  outputDir (required) - directory in which to write the data sets
-#  filePrefix (optional) - prefix added to filenames
-#  xNames (optional) - column names for the predictors
-#  yNames (optional) - column names for the outcomes
-#
-# Outputs:
-#  writes simulated data to disk in CSV format.  
-#  Filnames follow the pattern <filePrefix><start>To<end>.csv 
-#  (if filePrefix unspecified, then simulatedData<start>To<end>.csv)
-#  Files have the format
-# 
-#  dataSetID | Y (outcomes) | X (predictors)
-#
-#
+#' @rdname simulateData-methods
+#' @aliases simulateData,design.glmmF,design.glmmF-method
 setMethod("simulateData", "design.glmmF", 
           function(design, replicates=10000, blockSize=1000,
                    outputDir=".", filePrefix="simulatedData",
@@ -492,9 +473,8 @@ setMethod("simulateData", "design.glmmF",
           }
 )
 
-#
-# Generate the JSON representation of the design
-#
+#' @rdname designToJSON-methods
+#' @aliases designToJSON,design.glmmF,design.glmmF-method
 setMethod("designToJSON", "design.glmmF", 
           function(obj, expandX=FALSE) {
             if (expandX) {
@@ -524,27 +504,8 @@ setMethod("designToJSON", "design.glmmF",
 
 
 
-##
-# simulateData: simulate data sets for the specified study design
-#
-# Args:
-#  design (required) - the glmmFG study design object
-#  replicates (optional) - the total number of data sets
-#  blockSize (optional) - the number of data sets to include in each file
-#  outputDir (required) - directory in which to write the data sets
-#  filePrefix (optional) - prefix added to filenames
-#  xNames (optional) - column names for the predictors
-#  yNames (optional) - column names for the outcomes
-#
-# Outputs:
-#  writes simulated data to disk in CSV format.  
-#  Filnames follow the pattern <filePrefix><start>To<end>.csv 
-#  (if filePrefix unspecified, then simulatedData<start>To<end>.csv)
-#  Files have the format
-# 
-#  dataSetID | Y (outcomes) | X (predictors)
-#
-#
+#' @rdname simulateData-methods
+#' @aliases simulateData,design.glmmFG,design.glmmFG-method
 setMethod("simulateData", "design.glmmFG", 
           function(design, replicates=1000, blockSize=100,
                    outputDir=".", filePrefix="simulatedData",
@@ -641,11 +602,8 @@ setMethod("simulateData", "design.glmmFG",
 
 
 
-#
-# Obtain a single realization of the X matrix
-# with randomly generated covariates
-#
-#
+#' @rdname simulateXMatrix-methods
+#' @aliases simulateXMatrix,design.glmmFG,design.glmmFG-method
 setMethod("simulateXMatrix", "design.glmmFG", 
           function(design) {
             # first, calculate the full X matrix
@@ -665,6 +623,8 @@ setMethod("simulateXMatrix", "design.glmmFG",
           }
 )
 
+#' @rdname designToJSON-methods
+#' @aliases designToJSON,design.glmmFG,design.glmmFG-method
 setMethod("designToJSON", "design.glmmFG", 
           function(obj, expandX) {
             if (expandX) {
@@ -694,10 +654,8 @@ setMethod("designToJSON", "design.glmmFG",
           })
 
 
-#
-# Calculate empirical power for the specified GLMM(F,G) and
-# corresponding hypothesis
-#
+#' @rdname empiricalPower-methods
+#' @aliases empiricalPower,design.glmmFG,design.glmmFG-method
 setMethod("empiricalPower", "design.glmmFG", 
           function(design, glh, replicates=1000, realizations=1000) {
             
@@ -754,6 +712,8 @@ setMethod("empiricalPower", "design.glmmFG",
           }
 )
 
+#' @rdname fastEmpiricalPower-methods
+#' @aliases fastEmpiricalPower,design.glmmFG,design.glmmFG-method
 setMethod("fastEmpiricalPower", "design.glmmFG", 
           function(design, glh, realizations=1000, replicates=1000) {
             
@@ -765,16 +725,8 @@ setMethod("fastEmpiricalPower", "design.glmmFG",
           }
 )
 
-
-
-
-
-
-
-#
-# Create a JSON string representation of the specified 
-# general linear hypothesis object
-#
+#' @rdname toJSON-methods
+#' @aliases toJSON,glh,glh-method
 setMethod("toJSON", "glh", 
           function(obj) {            
             return(
