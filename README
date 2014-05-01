@@ -15,7 +15,7 @@ To replicate the simulation study results in the manuscript
 2. Install the package into your local R installation (http://cran.r-project.org/doc/manuals/R-admin.html#Add_002don-packages)
 3. load the library: 
   
-  > library(invWishartSum)
+  > library(rPowerlib)
 
 4. Run the simulation study (may take several hours to run with empirical calculations)
 
@@ -30,7 +30,7 @@ To replicate the simulation study results in the manuscript
 
 This package is based on the SAS/IML product POWERLIB (http://www.jstatsoft.org/v30/i05)
 developed by Keith E. Muller and colleagues.
-At present, the rPowerlib DOES NOT include the full functionality of POWERLIB.
+At present, the rPowerlib package DOES NOT include the full functionality of POWERLIB.
 For features such as power confidence intervals and more statistical tests,
 please try POWERLIB (http://github.com/samplesizeshop/powerlib) or 
 GLIMMPSE (https://glimmpse.samplesizeshop.org). Please
