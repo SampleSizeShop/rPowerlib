@@ -1,0 +1,38 @@
+\docType{class}
+\name{design.glmmFG}
+\alias{design.glmmFG}
+\title{design.glmmFG}
+\description{
+Class describing a general linear multivariate model design
+containing both fixed predictors and one or more Gaussian
+covariates
+}
+\section{Slots}{
+
+\describe{
+\item{\code{name}}{An optional \code{character} string specifying the name of the study design.}
+
+\item{\code{description}}{An optional \code{character} string specifying the
+     brief description of the study design.}
+
+\item{\code{perGroupN}}{A \code{numeric} value indicating the number
+     of participants in each study group.}
+
+\item{\code{XEssence}}{The design "essence" \code{matrix} for the fixed predictors.}
+
+\item{\code{Beta}}{The \code{matrix} of regression coefficients related to fixed predictors.}
+
+\item{\code{SigmaY}}{The covariance \code{matrix} for the outcomes, prior to adjusting for covariates.}
+
+\item{\code{SigmaG}}{The covariance \code{matrix} for the Gaussian predictors.}
+
+\item{\code{SigmaYG}}{The covariance \code{matrix} relating the outcomes and the Gaussian predictors.}
+}}
+\note{
+For theoretical details, please see
+
+Glueck, D. H., & Muller, K. E. (2003). Adjusting power for
+a baseline covariate in linear models. Statistics in
+Medicine, 22(16), 2535-2551. doi:10.1002/sim.1341
+}
+

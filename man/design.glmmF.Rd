@@ -1,0 +1,35 @@
+\docType{class}
+\name{design.glmmF}
+\alias{design.glmmF}
+\title{design.glmmF}
+\description{
+Class describing a general linear multivariate model design
+in which all predictors are fixed and known as part of the
+study design.
+}
+\section{Slots}{
+
+\describe{
+\item{\code{name}}{An optional \code{character} string specifying the name of the study design.}
+
+\item{\code{description}}{An optional \code{character} string specifying the
+     brief description of the study design.}
+
+\item{\code{perGroupN}}{A \code{numeric} value indicating the number
+     of participants in each study group.}
+
+\item{\code{XEssence}}{The design "essence" \code{matrix}.}
+
+\item{\code{Beta}}{The \code{matrix} of regression coefficients.}
+
+\item{\code{SigmaError}}{The residual covariance \code{matrix}.}
+}}
+\note{
+For theoretical details, please see
+
+Muller, K. E., Lavange, L. M., Ramey, S. L., & Ramey, C. T.
+(1992). Power Calculations for General Linear Multivariate
+Models Including Repeated Measures Applications. Journal of
+the American Statistical Association, 87(420), 1209-1226.
+}
+

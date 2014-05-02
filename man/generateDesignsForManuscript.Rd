@@ -1,0 +1,18 @@
+\name{generateDesignsForManuscript}
+\alias{generateDesignsForManuscript}
+\title{generateDesignsForManuscript}
+\usage{
+generateDesignsForManuscript()
+}
+\value{
+list of pairs of design.glmmFG and glh objects
+}
+\description{
+Generate the list of test cases (design.glmmFG and glh
+objects) for the manuscript:\cr Kreidler, S. M., Muller, K.
+E., & Glueck, D. H. Calculating Power for the General
+Linear Multivariate Model With One or More Gaussian
+Covariates, In review.
+}
+\keyword{internal}
+

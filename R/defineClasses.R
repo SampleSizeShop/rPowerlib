@@ -273,7 +273,8 @@ setClass (
 #' 
 #' @export
 #' @docType methods
-#' @rdname simulateXMatrix
+#' @rdname simulateXMatrix-methods
+#' @name simulateXMatrix
 #'
 setGeneric("simulateXMatrix", function(design) standardGeneric("simulateXMatrix"))
 
@@ -297,7 +298,8 @@ setGeneric("simulateXMatrix", function(design) standardGeneric("simulateXMatrix"
 #' 
 #' @export
 #' @docType methods
-#' @rdname simulateData
+#' @rdname simulateData-methods
+#' @name simulateData
 #'
 setGeneric("simulateData", function(design, replicates=10000, blockSize=1000,
                                     outputDir=".", filePrefix="simulatedData",
@@ -321,7 +323,8 @@ setGeneric("simulateData", function(design, replicates=10000, blockSize=1000,
 #' 
 #' @export
 #' @docType methods
-#' @rdname designToJSON
+#' @rdname designToJSON-methods
+#' @name designToJSON
 #'
 setGeneric("designToJSON", function(obj, expandX=FALSE) standardGeneric("designToJSON"))
 
@@ -340,7 +343,8 @@ setGeneric("designToJSON", function(obj, expandX=FALSE) standardGeneric("designT
 #' 
 #' @export
 #' @docType methods
-#' @rdname toJSON
+#' @rdname toJSON-methods
+#' @name toJSON
 #'
 setGeneric("toJSON", function(obj) standardGeneric("toJSON"))
 
@@ -361,7 +365,8 @@ setGeneric("toJSON", function(obj) standardGeneric("toJSON"))
 #' 
 #' @export
 #' @docType methods
-#' @rdname empiricalPower
+#' @rdname empiricalPower-methods
+#' @name empiricalPower
 #'
 setGeneric("empiricalPower", 
            function(design, glh, replicates=1000, realizations=1000) standardGeneric("empiricalPower"))
@@ -382,7 +387,8 @@ setGeneric("empiricalPower",
 #' 
 #' @export
 #' @docType methods
-#' @rdname fastEmpiricalPower
+#' @rdname fastEmpiricalPower-methods
+#' @name fastEmpiricalPower
 #'
 setGeneric("fastEmpiricalPower", 
            function(design, glh, realizations=1000, replicates=1000) standardGeneric("fastEmpiricalPower"))
@@ -475,7 +481,7 @@ setMethod("simulateData", "design.glmmF",
 
 #' @rdname designToJSON-methods
 #' @aliases designToJSON,design.glmmF,design.glmmF-method
-setMethod("designToJSON", "design.glmmF", 
+setMethod("designToJSON", signature("design.glmmF"), 
           function(obj, expandX=FALSE) {
             if (expandX) {
               XFull = obj@XEssence %x% matrix(rep(1,obj@perGroupN))
@@ -625,7 +631,7 @@ setMethod("simulateXMatrix", "design.glmmFG",
 
 #' @rdname designToJSON-methods
 #' @aliases designToJSON,design.glmmFG,design.glmmFG-method
-setMethod("designToJSON", "design.glmmFG", 
+setMethod("designToJSON", signature("design.glmmFG"), 
           function(obj, expandX) {
             if (expandX) {
               XFull = obj@XEssence %x% matrix(rep(1,obj@perGroupN))

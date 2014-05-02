@@ -1,0 +1,19 @@
+\name{resizeBetweenContrast}
+\alias{resizeBetweenContrast}
+\title{Reduce the number of columns in the between participant contrast}
+\usage{
+resizeBetweenContrast(glh, newColumns)
+}
+\arguments{
+  \item{glh}{the general linear hypothesis object}
+
+  \item{newColumns}{the updated number of columns}
+}
+\value{
+design.glmmFG object with a single covariate
+}
+\description{
+Convenience routine to trim the columns of the between
+participant contrast in a general linear hypothesis
+}
+
