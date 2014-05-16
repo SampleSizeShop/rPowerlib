@@ -1,0 +1,24 @@
+\name{glmmPower.fixed}
+\alias{glmmPower.fixed}
+\title{glmmPower.fixed}
+\usage{
+glmmPower.fixed(design, hypothesis)
+}
+\arguments{
+  \item{design}{a \code{design.glmmF} object describing the
+  study design}
+
+  \item{hypothesis}{a \code{glh} object describing the
+  hypothesis}
+}
+\value{
+approximate power for the specified design and hypothesis
+}
+\description{
+Calculate power for a fixed design using the methods of:\cr
+Muller, K. E., Lavange, L. M., Ramey, S. L., & Ramey, C. T.
+(1992). Power Calculations for General Linear Multivariate
+Models Including Repeated Measures Applications. Journal of
+the American Statistical Association, 87(420), 1209–1226.
+}
+

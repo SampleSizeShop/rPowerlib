@@ -1,0 +1,25 @@
+\name{mAdjust.expectedProjection}
+\alias{mAdjust.expectedProjection}
+\title{mAdjust.expectedProjection}
+\usage{
+mAdjust.expectedProjection(totalN, numFixedPredictors, numRandomPredictors)
+}
+\arguments{
+  \item{totalN}{total sample size}
+
+  \item{number}{of regression coefficients associated with
+  fixed predictors}
+
+  \item{number}{of regression coefficients associated with
+  random predictors}
+}
+\value{
+adjustment factor
+}
+\description{
+Calculate the adjustment factor for the M matrix based on
+the expected value of the projection matrix of the
+covariates: G(G'G)^-1G'
+}
+\keyword{internal}
+

@@ -1,0 +1,26 @@
+\name{mAdjust.fixedVsRandomDF}
+\alias{mAdjust.fixedVsRandomDF}
+\title{mAdjust.fixedVsRandomDF}
+\usage{
+mAdjust.fixedVsRandomDF(totalN, numFixedPredictors, numRandomPredictors)
+}
+\arguments{
+  \item{totalN}{total sample size}
+
+  \item{number}{of regression coefficients associated with
+  fixed predictors}
+
+  \item{number}{of regression coefficients associated with
+  random predictors}
+}
+\value{
+adjustment factor
+}
+\description{
+Calculate the adjustment factor for the M matrix based on
+the the relative number of fixed vs. random predictors.
+This seemed like a reasonable approach but was not derived
+theoretically.
+}
+\keyword{internal}
+

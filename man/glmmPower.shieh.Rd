@@ -1,0 +1,23 @@
+\name{glmmPower.shieh}
+\alias{glmmPower.shieh}
+\title{glmmPower.shieh}
+\usage{
+glmmPower.shieh(design, glh)
+}
+\arguments{
+  \item{design}{a \code{design.glmmFG} object describing
+  the study design}
+
+  \item{hypothesis}{a \code{glh} object describing the
+  hypothesis}
+}
+\value{
+approximate power for the specified design and hypothesis
+}
+\description{
+Calculate power using the asymptotic approach described
+by:\cr Shieh, G. (2005). Power and sample size calculations
+for multivariate linear models with random explanatory
+variables. Psychometrika, 70(2), 347–358.
+}
+
