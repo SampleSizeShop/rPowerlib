@@ -1,0 +1,25 @@
+\name{mAdjust.noAdjust}
+\alias{mAdjust.noAdjust}
+\title{mAdjust.noAdjust}
+\usage{
+mAdjust.noAdjust(totalN, numFixedPredictors, numRandomPredictors)
+}
+\arguments{
+  \item{totalN}{total sample size}
+
+  \item{number}{of regression coefficients associated with
+  fixed predictors}
+
+  \item{number}{of regression coefficients associated with
+  random predictors}
+}
+\value{
+1
+}
+\description{
+Adjustment factor to obtain an unadjusted M matrix in the
+power calculation. This function is primarily used for
+testing.
+}
+\keyword{internal}
+

@@ -165,8 +165,9 @@ calculateEmpiricalPowerForDesignList <- function(designList, output.data.dir="."
 #' Calculate approximate power values for a list of design/glh pairs.
 #'   
 #' @param designList list of pairs of design.glmmFG and glh objects
+#' @param output.data.dir directory to which data sets are written
 #' @return design.glmmFG object with a single covariate
-#' @note This function requires several hours to run
+#' @note This function takes about 15-30 minutes to run
 #' 
 calculateApproximatePowerForDesignList <- function(designList, output.data.dir=".") {
   # calculate empirical power 
@@ -232,9 +233,8 @@ calculateApproximatePowerForDesignList <- function(designList, output.data.dir="
 #' Generate box plots which summarize the deviations from empirical
 #' power for the approximate methods.
 #'   
-#' @param designList list of pairs of design.glmmFG and glh objects
-#' @return design.glmmFG object with a single covariate
-#' @note This function requires several hours to run
+#' @param output.data.dir directory to which data sets are written
+#' @return output.figures.dir directory to which figures are written
 #'
 summarizeResults = function(output.data.dir=".", output.figures.dir=".") {
   
@@ -242,28 +242,28 @@ summarizeResults = function(output.data.dir=".", output.figures.dir=".") {
   load(paste(c(output.data.dir, "approximateAndEmpiricalPower.RData"), collapse="/"))
   
   # calculate the deviations
-  approximateAndEmpiricalPower$id = 1:length(approximateAndEmpiricalPower$designName)
-  approximateAndEmpiricalPower$diff.covar = approximateAndEmpiricalPower$power.covarAdj.mAdjExpProj - 
-    approximateAndEmpiricalPower$empiricalPower 
-  approximateAndEmpiricalPower$diff.shieh = approximateAndEmpiricalPower$power.shieh - 
-    approximateAndEmpiricalPower$empiricalPower 
-  approximateAndEmpiricalPower$diff.topCovar = approximateAndEmpiricalPower$power.topCovar - 
-    approximateAndEmpiricalPower$empiricalPower
-  approximateAndEmpiricalPower$diff.fixed = approximateAndEmpiricalPower$power.fixed - 
-    approximateAndEmpiricalPower$empiricalPower
+  approximateAndEmpiricalPowerData$id = 1:length(approximateAndEmpiricalPowerData$designName)
+  approximateAndEmpiricalPowerData$diff.covar = approximateAndEmpiricalPowerData$power.covarAdj.mAdjExpProj - 
+    approximateAndEmpiricalPowerData$empiricalPower 
+  approximateAndEmpiricalPowerData$diff.shieh = approximateAndEmpiricalPowerData$power.shieh - 
+    approximateAndEmpiricalPowerData$empiricalPower 
+  approximateAndEmpiricalPowerData$diff.topCovar = approximateAndEmpiricalPowerData$power.topCovar - 
+    approximateAndEmpiricalPowerData$empiricalPower
+  approximateAndEmpiricalPowerData$diff.fixed = approximateAndEmpiricalPowerData$power.fixed - 
+    approximateAndEmpiricalPowerData$empiricalPower
   
   # get max absolute deviations
   maxDeviationData = data.frame(method=c("covar", "shieh", "topCovar", "fixed"),
-                                maxDeviation=c(max(abs(approximateAndEmpiricalPower$diff.covar)),
-                                               max(abs(approximateAndEmpiricalPower$diff.shieh)),
-                                               max(abs(approximateAndEmpiricalPower$diff.topCovar)),
-                                               max(abs(approximateAndEmpiricalPower$diff.fixed))))
+                                maxDeviation=c(max(abs(approximateAndEmpiricalPowerData$diff.covar)),
+                                               max(abs(approximateAndEmpiricalPowerData$diff.shieh)),
+                                               max(abs(approximateAndEmpiricalPowerData$diff.topCovar)),
+                                               max(abs(approximateAndEmpiricalPowerData$diff.fixed))))
   # save the max deviation info to a file
   save(maxDeviationData,
        file=paste(c(output.data.dir, "maxDeviationsByMethod.RData"), collapse="/"))
   
   # convert to long with factor identifying power method
-  powerDataLong = reshape(approximateAndEmpiricalPower, 
+  powerDataLong = reshape(approximateAndEmpiricalPowerData, 
                           varying=c(
                             "diff.covar",
                             "diff.shieh",
@@ -360,31 +360,37 @@ runSimulationStudy <- function(study.seed=7634, study.data.dir=".", study.figure
   set.seed(study.seed)
   
   # generate the designs for the validation study
+  cat("### Generating designs and hypotheses\n")
   designList = generateDesignsForManuscript()
   
   # calculate empirical power
   if (study.runEmpirical) {
+    cat("### Running empirical power calculations\n")
     # calculate empirical power for each design
     # !! Requires several hours to run !!
     empiricalPowerData = calculateEmpiricalPowerForDesignList(designList, study.data.dir)
     
   } else {
+    cat("### Loading existing empirical power calculations\n")
     # load the existing empirical data 
     data("empiricalPower", package="rPowerlib")
   }
   
   # calculate approximate power - runs in about 10-30 minutes
+  cat("### Running approximate power calculations\n")
   approxPowerData = calculateApproximatePowerForDesignList(designList, study.data.dir)
 
   # combine the data into a single data set and write to disk
-  approxAndEmpiricalPowerData = data.frame(approxPowerData, 
+  cat("### Combining empirical and approximate values into common data set\n")
+  approximateAndEmpiricalPowerData = data.frame(approxPowerData, 
                                            empiricalPower=empiricalPowerData$empiricalPower,
                                            empiricalTime=empiricalPowerData$time)
   # save to disk
-  save(approxAndEmpiricalPowerData,
+  save(approximateAndEmpiricalPowerData,
        file=paste(c(study.data.dir, "approximateAndEmpiricalPower.RData"), collapse="/"))
   
   # Produce summary figures and calculate max deviations for each method
+  cat("### Summarizing results and generating figures\n")
   summarizeResults(study.data.dir, study.figures.dir)
 
   

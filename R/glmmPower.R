@@ -20,33 +20,63 @@
 #
 #####################################################################
 
-#
-# Adjustment factor for the M matrix based on the
-# expected value of the projection matrix 
-# of the covariates: G(G'G)^-1G'
-#
+#' mAdjust.fixedVsRandomDF 
+#' 
+#' Calculate the adjustment factor for the M matrix based on the
+#' the relative number of fixed vs. random predictors.  This seemed like
+#' a reasonable approach but was not derived theoretically.
+#' 
+#' @param totalN total sample size
+#' @param number of regression coefficients associated with fixed predictors
+#' @param number of regression coefficients associated with random predictors
+#' @return adjustment factor
+#' @keywords internal
+#' 
 mAdjust.fixedVsRandomDF <- function(totalN, numFixedPredictors, numRandomPredictors) {
   return((totalN - numFixedPredictors) / (totalN - numFixedPredictors - numRandomPredictors))
 }
 
-#
-# Adjustment factor for the M matrix based on the
-# expected value of the projection matrix 
-# of the covariates: G(G'G)^-1G'
-#
+#' mAdjust.expectedProjection 
+#' 
+#' Calculate the adjustment factor for the M matrix based on the
+#' expected value of the projection matrix of the covariates: G(G'G)^-1G'
+#' 
+#' @param totalN total sample size
+#' @param number of regression coefficients associated with fixed predictors
+#' @param number of regression coefficients associated with random predictors
+#' @return adjustment factor
+#' @keywords internal
+#' 
 mAdjust.expectedProjection <- function(totalN, numFixedPredictors, numRandomPredictors) {
   return ((totalN) / (totalN - numRandomPredictors)) 
 }
 
-#
-# Adjustment factor of 1, that is, no adjustment to M
-#
+#' mAdjust.noAdjust 
+#' 
+#' Adjustment factor to obtain an unadjusted M matrix in the power calculation.
+#' This function is primarily used for testing.
+#' 
+#' @param totalN total sample size
+#' @param number of regression coefficients associated with fixed predictors
+#' @param number of regression coefficients associated with random predictors
+#' @return 1
+#' @keywords internal
+#' 
 mAdjust.noAdjust <- function(totalN, numFixedPredictors, numRandomPredictors) { return(1) } 
 
-#
-# Calculate power using the covariate adjustment approach proposed
-# by Kreidler et al.
-#
+#' glmmPower.covariateAdjusted 
+#' 
+#' Calculate power using the covariate adjustment approach proposed
+#' in the manuscript:\cr
+#' Kreidler, S. M., Muller, K. E., & Glueck, D. H. 
+#' Calculating Power for the General Linear Multivariate Model 
+#' With One or More Gaussian Covariates, In review. 
+#' 
+#' @param design a \code{design.glmmFG} object describing the study design 
+#' @param hypothesis a \code{glh} object describing the hypothesis
+#' @param mAdjust (optional) a function calculating the adjustment factor for the M matrix
+#' @return approximate power for the specified design and hypothesis
+#' 
 glmmPower.covariateAdjusted = function(design, hypothesis, mAdjust=mAdjust.expectedProjection) {
   # TODO: make sure model and glh conform
   if (class(design) != "design.glmmFG") {
@@ -112,10 +142,16 @@ glmmPower.covariateAdjusted = function(design, hypothesis, mAdjust=mAdjust.expec
   return(power)
 }
 
-#
-# Calculate power based on the asymptotic approach 
-# developed by Shieh
-#
+#' glmmPower.shieh 
+#' 
+#' Calculate power using the asymptotic approach described by:\cr
+#' Shieh, G. (2005). Power and sample size calculations for multivariate linear 
+#' models with random explanatory variables. Psychometrika, 70(2), 347–358. 
+#' 
+#' @param design a \code{design.glmmFG} object describing the study design 
+#' @param hypothesis a \code{glh} object describing the hypothesis
+#' @return approximate power for the specified design and hypothesis
+#' 
 glmmPower.shieh = function(design, glh) {
   # validate
   # TODO: make sure model and glh conform
@@ -190,11 +226,17 @@ glmmPower.shieh = function(design, glh) {
   
 }
 
-
-#
-# Calculate power for linear models with a single
-# Gaussian covariate
-#
+#' glmmPower.unconditionalSingleCovariate 
+#' 
+#' Calculate power for a multiple covariate design by selecting the 
+#' single most strongly correlated covariate and applying the methods of:\cr
+#' Glueck, D. H., & Muller, K. E. (2003). Adjusting power for a baseline 
+#' covariate in linear models. Statistics in Medicine, 22(16), 2535–2551.
+#' 
+#' @param design a \code{design.glmmFG} object describing the study design 
+#' @param hypothesis a \code{glh} object describing the hypothesis
+#' @return approximate power for the specified design and hypothesis
+#'
 glmmPower.unconditionalSingleCovariate = function(design, hypothesis) {
   # validate
   # TODO: make sure model and glh conform
@@ -211,10 +253,18 @@ glmmPower.unconditionalSingleCovariate = function(design, hypothesis) {
   return(power)
 }
 
-#
-# Calculate power for linear models with fixed predictors
-# only
-#
+#' glmmPower.fixed 
+#' 
+#' Calculate power for a fixed design using the methods of:\cr
+#' Muller, K. E., Lavange, L. M., Ramey, S. L., & Ramey, C. T. (1992). 
+#' Power Calculations for General Linear Multivariate Models Including 
+#' Repeated Measures Applications. Journal of the American Statistical 
+#' Association, 87(420), 1209–1226.
+#' 
+#' @param design a \code{design.glmmF} object describing the study design 
+#' @param hypothesis a \code{glh} object describing the hypothesis
+#' @return approximate power for the specified design and hypothesis
+#'
 glmmPower.fixed = function(design, hypothesis) {
   # validate
   # TODO: make sure model and glh conform
