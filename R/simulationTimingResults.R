@@ -29,3 +29,4 @@ for(i in unique(data$numRM)) {
   
 }
 
+tmpData = data[data$empiricalTime < 300 & data$empiricalTime > 200,]
