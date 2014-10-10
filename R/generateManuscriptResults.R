@@ -194,8 +194,9 @@ calculateApproximatePowerForDesignList <- function(designList, output.data.dir="
     ellapsed = proc.time() - startTime
     covarAdjustPowerAndTimeList[[i]] = list(power, ellapsed)
   }
-  approxPowerData$power.covarAdj.mAdjExpProj = covarAdjustPowerAndTimeList[[1]]
-  approxPowerData$time.covarAdj.mAdjExpProj = covarAdjustPowerAndTimeList[[2]]
+  ## add the timing results and the empirical power values to the data set
+  approxPowerData$power.covarAdj.mAdjExpProj=sapply(covarAdjustPowerAndTimeList, function(x) { return(x[[1]])})
+  approxPowerData$time.covarAdj.mAdjExpProj=sapply(covarAdjustPowerAndTimeList, function(x) {return(x[[2]][1])})
   
   # add power using method described by
   #
