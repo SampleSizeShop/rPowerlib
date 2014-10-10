@@ -184,9 +184,19 @@ calculateApproximatePowerForDesignList <- function(designList, output.data.dir="
     return(glmmPower.covariateAdjusted(x[[1]], x[[2]],
                                        mAdjust=mAdjust.fixedVsRandomDF))})
   # add covariate adjusted power with expected projection adjustment
-  approxPowerData$power.covarAdj.mAdjExpProj = sapply(designList, function(x) { 
-    return(glmmPower.covariateAdjusted(x[[1]], x[[2]], 
-                                       mAdjust=mAdjust.expectedProjection))})
+  covarAdjustPowerAndTimeList = list()
+  for(i in 1:length(designList)) {
+    x = designList[[i]]
+    
+    startTime <- proc.time()
+    power = glmmPower.covariateAdjusted(x[[1]], x[[2]], 
+                                        mAdjust=mAdjust.expectedProjection)
+    ellapsed = proc.time() - startTime
+    covarAdjustPowerAndTimeList[[i]] = list(power, ellapsed)
+  }
+  approxPowerData$power.covarAdj.mAdjExpProj = covarAdjustPowerAndTimeList[[1]]
+  approxPowerData$time.covarAdj.mAdjExpProj = covarAdjustPowerAndTimeList[[2]]
+  
   # add power using method described by
   #
   # Shieh, G. (2005). Power and sample size calculations for multivariate 
