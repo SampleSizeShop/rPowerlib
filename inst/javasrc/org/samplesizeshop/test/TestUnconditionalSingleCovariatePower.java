@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.kreidles.test;
+package org.samplesizeshop.test;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 
 import org.json.simple.parser.ParseException;
 
-import com.kreidles.PowerCalculator;
+import org.samplesizeshop.PowerCalculator;
 
 public class TestUnconditionalSingleCovariatePower extends TestCase {
     private String designJSON = "{\"name\": \"\",\"description\": \"\",\"XEssence\": {\"rows\": 2,\"columns\": 2,\"data\": [[ 1,0 ],[ 0,1 ]]},\"perGroupN\": 10,\"betaFixed\": {\"rows\": 2,\"columns\": 3,\"data\": [[ 1,0,0 ],[ 0,0,0 ]]},\"sigmaY\": {\"rows\": 3,\"columns\": 3,\"data\": [[ 1,0.2,0.2 ],[ 0.2,1,0.2 ],[ 0.2,0.2,1 ]]},\"sigmaG\": {\"rows\": 1,\"columns\": 1,\"data\": [[ 1.2 ]]},\"sigmaYG\": {\"rows\": 3,\"columns\": 1,\"data\": [[ 0.2 ],[ 0.4 ],[ 0.5 ]]}}";

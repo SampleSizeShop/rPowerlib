@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.kreidles.test;
+package org.samplesizeshop.test;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 
 import org.json.simple.parser.ParseException;
 
-import com.kreidles.PowerCalculator;
+import org.samplesizeshop.PowerCalculator;
 
 public class TestConditionalPower extends TestCase {
     private String designJSON = "{\"name\": \"\",\"description\": \"\"," +

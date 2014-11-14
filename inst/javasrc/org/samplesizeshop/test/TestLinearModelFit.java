@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.kreidles.test;
+package org.samplesizeshop.test;
 
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -27,10 +27,10 @@ import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import com.kreidles.JSONUtils;
-import com.kreidles.LinearHypothesis;
-import com.kreidles.LinearHypothesisTestResult;
-import com.kreidles.LinearModelFit;
+import org.samplesizeshop.JSONUtils;
+import org.samplesizeshop.LinearHypothesis;
+import org.samplesizeshop.LinearHypothesisTestResult;
+import org.samplesizeshop.LinearModelFit;
 
 import junit.framework.TestCase;
 

@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.kreidles;
+package org.samplesizeshop;
 
 import java.io.IOException;
 import java.util.List;
@@ -117,7 +117,30 @@ public class GLMMFixedDesign {
         params.addSigmaScale(1);
         params.addSampleSize(perGroupN);
         params.addPowerMethod(GLMMPowerParameters.PowerMethod.CONDITIONAL_POWER);
-        params.addTest(GLMMTestFactory.Test.HOTELLING_LAWLEY_TRACE);
+        
+        switch (glh.getTest()) {
+        case LinearHypothesis.hotellingLawleyTrace:
+            params.addTest(GLMMTestFactory.Test.HOTELLING_LAWLEY_TRACE);
+            break;
+        case LinearHypothesis.wilksLambda:
+            params.addTest(GLMMTestFactory.Test.WILKS_LAMBDA);
+            break;
+        case LinearHypothesis.pillaiBartlettTrace:
+            params.addTest(GLMMTestFactory.Test.PILLAI_BARTLETT_TRACE);
+            break;
+        case LinearHypothesis.unirepUncorrected:
+            params.addTest(GLMMTestFactory.Test.UNIREP);
+            break;
+        case LinearHypothesis.unirepBox:
+            params.addTest(GLMMTestFactory.Test.UNIREP_BOX);
+            break;
+        case LinearHypothesis.unirepGeisserGreenhouse:
+            params.addTest(GLMMTestFactory.Test.UNIREP_GEISSER_GREENHOUSE);
+            break;
+        case LinearHypothesis.unirepHuynhFeldt:
+            params.addTest(GLMMTestFactory.Test.UNIREP_HUYNH_FELDT);
+            break;
+        }
         
         // calculate power
         GLMMPowerCalculator calc = new GLMMPowerCalculator();

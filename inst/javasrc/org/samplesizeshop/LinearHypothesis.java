@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.kreidles;
+package org.samplesizeshop;
 
 import java.io.IOException;
 
@@ -40,9 +40,13 @@ public class LinearHypothesis {
     private static final String betweenContrastJSONField = "betweenContrast";
     private static final String withinContrastJSONField = "withinContrast";
 
-    private static final String hotellingLawleyTrace = "Hotelling-Lawley";
-    private static final String pillaiBartlettTrace = "Pillai";
-    private static final String wilksLambda = "Wilks";
+    public static final String hotellingLawleyTrace = "Hotelling-Lawley";
+    public static final String pillaiBartlettTrace = "Pillai";
+    public static final String wilksLambda = "Wilks";
+    public static final String unirepUncorrected = "UNIREP";
+    public static final String unirepGeisserGreenhouse = "UNIREP-GG";
+    public static final String unirepHuynhFeldt = "UNIREP-HF";
+    public static final String unirepBox = "UNIREP-Box";
     
     // the between participant contrast
     RealMatrix betweenContrastMatrix;

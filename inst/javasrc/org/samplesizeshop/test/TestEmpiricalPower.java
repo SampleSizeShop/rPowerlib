@@ -19,15 +19,15 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.kreidles.test;
+package org.samplesizeshop.test;
 
 import java.io.IOException;
 
 import org.json.simple.parser.ParseException;
 
-import com.kreidles.PowerCalculator;
-import com.kreidles.GLMMFixedRandomDesign;
-import com.kreidles.LinearHypothesis;
+import org.samplesizeshop.PowerCalculator;
+import org.samplesizeshop.GLMMFixedRandomDesign;
+import org.samplesizeshop.LinearHypothesis;
 
 import junit.framework.TestCase;
 

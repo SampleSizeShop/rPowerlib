@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  */
-package com.kreidles;
+package org.samplesizeshop;
 
 import org.apache.commons.math3.linear.RealMatrix;
 
