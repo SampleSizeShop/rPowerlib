@@ -118,28 +118,20 @@ public class GLMMFixedDesign {
         params.addSampleSize(perGroupN);
         params.addPowerMethod(GLMMPowerParameters.PowerMethod.CONDITIONAL_POWER);
         
-        switch (glh.getTest()) {
-        case LinearHypothesis.hotellingLawleyTrace:
+        if (LinearHypothesis.hotellingLawleyTrace.equals(glh.getTest())) {
             params.addTest(GLMMTestFactory.Test.HOTELLING_LAWLEY_TRACE);
-            break;
-        case LinearHypothesis.wilksLambda:
+        } else if (LinearHypothesis.wilksLambda.equals(glh.getTest())) {
             params.addTest(GLMMTestFactory.Test.WILKS_LAMBDA);
-            break;
-        case LinearHypothesis.pillaiBartlettTrace:
+        } else if (LinearHypothesis.pillaiBartlettTrace.equals(glh.getTest())) {
             params.addTest(GLMMTestFactory.Test.PILLAI_BARTLETT_TRACE);
-            break;
-        case LinearHypothesis.unirepUncorrected:
+        } else if (LinearHypothesis.unirepUncorrected.equals(glh.getTest())) {
             params.addTest(GLMMTestFactory.Test.UNIREP);
-            break;
-        case LinearHypothesis.unirepBox:
+        } else if (LinearHypothesis.unirepBox.equals(glh.getTest())) {
             params.addTest(GLMMTestFactory.Test.UNIREP_BOX);
-            break;
-        case LinearHypothesis.unirepGeisserGreenhouse:
+        } else if (LinearHypothesis.unirepGeisserGreenhouse.equals(glh.getTest())) {
             params.addTest(GLMMTestFactory.Test.UNIREP_GEISSER_GREENHOUSE);
-            break;
-        case LinearHypothesis.unirepHuynhFeldt:
+        } else if (LinearHypothesis.unirepHuynhFeldt.equals(glh.getTest())) {
             params.addTest(GLMMTestFactory.Test.UNIREP_HUYNH_FELDT);
-            break;
         }
         
         // calculate power
