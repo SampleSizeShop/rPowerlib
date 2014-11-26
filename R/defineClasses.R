@@ -356,8 +356,8 @@ setGeneric("toJSON", function(obj) standardGeneric("toJSON"))
 #'
 #' @param design An object describing a study design
 #' @param glh An object describing the general linear hypothesis to be tested
-#' @replicates total number of error replicates to produce for a given X matrix
-#' @realizations total number of realizations of the X matrix to generate
+#' @param replicates total number of error replicates to produce for a given X matrix
+#' @param realizations total number of realizations of the X matrix to generate
 #' 
 #' @return empirical unconditional power
 #' 
@@ -378,8 +378,8 @@ setGeneric("empiricalPower",
 #'
 #' @param design An object describing a study design
 #' @param glh An object describing the general linear hypothesis to be tested
-#' @replicates total number of error replicates to produce for a given X matrix
-#' @realizations total number of realizations of the X matrix to generate
+#' @param replicates total number of error replicates to produce for a given X matrix
+#' @param realizations total number of realizations of the X matrix to generate
 #' 
 #' @return empirical unconditional power
 #' 
@@ -723,7 +723,7 @@ setMethod("empiricalPower", "design.glmmFG",
 setMethod("fastEmpiricalPower", "design.glmmFG", 
           function(design, glh, realizations=1000, replicates=1000) {
             
-            obj=.jnew("com/kreidles/PowerCalculator")
+            obj=.jnew("org/samplesizeshop/PowerCalculator")
             power = .jcall(obj, "D", "calculateEmpiricalPower", 
                            designToJSON(design, TRUE), toJSON(glh), 
                            as.integer(realizations), as.integer(replicates))

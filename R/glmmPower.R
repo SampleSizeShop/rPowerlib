@@ -247,7 +247,7 @@ glmmPower.unconditionalSingleCovariate = function(design, hypothesis) {
     stop("the specified hypothesis is not a general linear hypothesis")
   }
   
-  obj=.jnew("com/kreidles/PowerCalculator")
+  obj=.jnew("org/samplesizeshop/PowerCalculator")
   power = .jcall(obj, "D", "calculateUnconditionalSingleCovariatePower", 
                  designToJSON(design, FALSE), toJSON(hypothesis))
   return(power)
@@ -275,7 +275,7 @@ glmmPower.fixed = function(design, hypothesis) {
     stop("the specified hypothesis is not a general linear hypothesis")
   }
   
-  obj=.jnew("com/kreidles/PowerCalculator")
+  obj=.jnew("org/samplesizeshop/PowerCalculator")
   power = .jcall(obj, "D", "calculateConditionalPower", 
                  designToJSON(design, FALSE), toJSON(hypothesis))
   return(power)
