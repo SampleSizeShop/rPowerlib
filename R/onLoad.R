@@ -25,6 +25,7 @@
   library(magic)
   library(car)
   library(MASS)
+  library(xtable)
   
   # initialize the java environment and load necessary jars
   .jpackage(pkgname, lib.loc=libname)
